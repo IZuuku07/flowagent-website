@@ -1,7 +1,3 @@
-const adminState = {
-  data: null
-};
-
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -9,17 +5,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-}
-
-function nlJoin(items) {
-  return Array.isArray(items) ? items.join("\n") : "";
-}
-
-function splitLines(value) {
-  return String(value || "")
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function api(path, options = {}) {
@@ -40,18 +25,6 @@ function api(path, options = {}) {
   });
 }
 
-function stars(count) {
-  return "★".repeat(Math.max(1, Math.min(5, Number(count || 5))));
-}
-
-function serviceLink(service) {
-  return `/services/${service.slug}`;
-}
-
-function blogLink(post) {
-  return `/blog/${post.slug}`;
-}
-
 function updateSeo(publicData) {
   const pathname = window.location.pathname === "/index.html" ? "/" : window.location.pathname.replace(/\.html$/, "");
   const seo = publicData.seo;
@@ -66,1423 +39,683 @@ function updateSeo(publicData) {
   }
 }
 
-function normalizePathname(pathname) {
-  if (!pathname || pathname === "/index.html") {
-    return "/";
-  }
-  return pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "") || "/";
+function serviceLink(service) {
+  return `/services/${service.slug}`;
 }
 
-function isActivePath(currentPath, href) {
-  const current = normalizePathname(currentPath);
-  const target = normalizePathname(href);
-
-  if (target === "/") {
-    return current === "/";
-  }
-
-  return current === target || current.startsWith(`${target}/`);
-}
-
-function renderSiteNav() {
-  const currentPath = window.location.pathname;
-  const links = [
-    { href: "/services", label: "Services" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/case-studies", label: "Case Studies" },
-    { href: "/blog", label: "Blog" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" }
-  ];
-
-  return links
-    .map(
-      ({ href, label }) =>
-        `<a href="${href}"${isActivePath(currentPath, href) ? ' aria-current="page"' : ""}>${label}</a>`
-    )
-    .join("");
-}
-
+// ============================================================================
+// HEADER & FOOTER RENDERING
+// ============================================================================
 function renderHeader(settings) {
   const header = document.getElementById("siteHeader");
-  if (!header) {
-    return;
-  }
+  if (!header) return;
 
   header.innerHTML = `
-    <a class="brand" href="/">
-      <img class="brand-logo" src="/${escapeHtml(settings.logoPath || "flowagent-logo.png")}" alt="${escapeHtml(settings.brandName)} logo">
-      <span class="brand-lockup">
-        <span class="brand-text">${escapeHtml(settings.brandName)}</span>
-        <span class="brand-tagline">${escapeHtml(settings.tagline)}</span>
-      </span>
-    </a>
-    <nav class="site-nav">${renderSiteNav()}</nav>
-    <div class="header-actions">
-      <a class="button button-small" href="${escapeHtml(settings.bookingLink || "/contact")}">Book a Call</a>
+    <div class="container header-inner">
+      <a class="brand" href="/">
+        <img class="brand-logo" src="/${escapeHtml(settings.logoPath || 'flowagent-logo.png')}" alt="${escapeHtml(settings.brandName)}">
+        <h2 class="brand-text">${escapeHtml(settings.brandName)}</h2>
+      </a>
+      
+      <nav class="nav-links">
+        <a href="/services">Services</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/#caseStudySection">Case Studies</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+      
+      <div class="header-actions">
+        <a href="${escapeHtml(settings.bookingLink)}" class="btn btn-primary btn-sm">Book a Call</a>
+      </div>
+      
+      <button class="mobile-toggle" aria-label="Toggle menu">☰</button>
     </div>
   `;
-}
 
-function renderAdminHeader() {
-  const header = document.getElementById("siteHeader");
-  if (!header) {
-    return;
-  }
-
-  header.innerHTML = `
-    <a class="brand" href="/">
-      <img class="brand-logo" src="/flowagent-logo.png" alt="FlowAgent logo">
-      <span class="brand-lockup">
-        <span class="brand-text">FlowAgent Admin</span>
-        <span class="brand-tagline">Manage the site without touching code</span>
-      </span>
-    </a>
-    <div class="header-actions">
-      <a class="button button-ghost button-small" href="/">View Website</a>
-      <button class="button button-ghost button-small" id="logoutButton" type="button">Logout</button>
-    </div>
-  `;
+  // Header scroll effect
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
 }
 
 function renderFooter(settings) {
   const footer = document.getElementById("siteFooter");
-  if (!footer) {
-    return;
-  }
+  if (!footer) return;
 
-  footer.className = "section";
   footer.innerHTML = `
-    <div class="glass-card footer-card">
-      <div class="results-layout">
-        <div class="panel-stack">
-          <p class="eyebrow">FlowAgent</p>
-          <h3 class="card-title">${escapeHtml(settings.tagline)}</h3>
-          <p class="muted-copy">${escapeHtml(settings.footerBlurb)}</p>
-          <div class="inline-actions">
-            <a class="button button-small" href="/contact">Start a Project</a>
-            <a class="button button-ghost button-small" href="/pricing">See Pricing</a>
-          </div>
-        </div>
-        <div class="footer-grid">
-          <div>
-            <strong>Navigation</strong>
-            <a href="/">Home</a>
-            <a href="/services">Services</a>
-            <a href="/pricing">Pricing</a>
-            <a href="/blog">Blog</a>
-          </div>
-          <div>
-            <strong>Company</strong>
-            <a href="/about">About</a>
-            <a href="/case-studies">Case Studies</a>
-            <a href="/testimonials">Testimonials</a>
-            <a href="/faq">FAQ</a>
-          </div>
-          <div>
-            <strong>Contact</strong>
-            <a href="mailto:${escapeHtml(settings.businessEmail)}">${escapeHtml(settings.businessEmail)}</a>
-            <span>${escapeHtml(settings.whatsapp || "WhatsApp not added yet")}</span>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms</a>
-          </div>
-        </div>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="/${escapeHtml(settings.logoPath || 'flowagent-logo.png')}" alt="${escapeHtml(settings.brandName)}">
+          <h2 class="brand-text">${escapeHtml(settings.brandName)}</h2>
+        </a>
+        <p>${escapeHtml(settings.footerBlurb)}</p>
       </div>
-      <div class="footer-newsletter">
-        <div>
-          <strong>${escapeHtml(settings.newsletterTitle)}</strong>
-          <p class="muted-copy">${escapeHtml(settings.newsletterText)}</p>
-        </div>
-        <form id="newsletterForm" class="newsletter-form">
-          <input type="email" name="email" placeholder="Your email" required>
-          <button class="button button-small" type="submit">Subscribe</button>
+      
+      <div class="footer-links">
+        <h4>Services</h4>
+        <ul id="footerServicesList">
+          <!-- Populated dynamically -->
+        </ul>
+      </div>
+      
+      <div class="footer-links">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/faq">FAQ</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-links">
+        <h4>${escapeHtml(settings.newsletterTitle)}</h4>
+        <p style="font-size: 0.9rem; margin-bottom: 12px;">${escapeHtml(settings.newsletterText)}</p>
+        <form class="newsletter-form" id="newsletterForm">
+          <input type="email" name="email" placeholder="Email address" required>
+          <button type="submit" class="btn btn-primary btn-sm">Join</button>
         </form>
       </div>
     </div>
-  `;
-
-  const newsletterForm = document.getElementById("newsletterForm");
-  if (newsletterForm && newsletterForm.dataset.bound !== "true") {
-    newsletterForm.dataset.bound = "true";
-    newsletterForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      try {
-        const formData = new FormData(newsletterForm);
-        await api("/api/forms/newsletter", {
-          method: "POST",
-          body: JSON.stringify({ email: String(formData.get("email") || "").trim() })
-        });
-        newsletterForm.reset();
-      } catch (error) {
-        console.error(error);
-      }
-    });
-  }
-}
-
-function renderServiceCards(services, settings, targetId) {
-  const grid = document.getElementById(targetId);
-  if (!grid) {
-    return;
-  }
-
-  grid.innerHTML = services
-    .map((service) => `
-      <article class="service-card ${service.featured ? "featured-card" : ""}">
-        ${service.featured ? '<p class="card-tag">Featured service</p>' : ""}
-        <div class="service-card-head">
-          <h3 class="card-title">${escapeHtml(service.title)}</h3>
-          <div class="price-line">${escapeHtml(service.price)}</div>
-        </div>
-        <p>${escapeHtml(service.description)}</p>
-        <ul>${service.benefits.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-        <div class="service-card-actions">
-          <a class="button button-small" href="${serviceLink(service)}">View Service</a>
-          <a class="button button-ghost button-small" href="/contact">Request Quote</a>
-        </div>
-        ${paymentButtons(service, settings)}
-      </article>
-    `)
-    .join("");
-}
-
-function paymentButtons(item, settings) {
-  const stripeLink = item.stripeLink || settings.defaultStripeLink;
-  const paypalLink = item.paypalLink || settings.defaultPaypalLink;
-
-  if (!stripeLink && !paypalLink) {
-    return '';
-  }
-
-  return `
-    <div class="payment-actions">
-      ${stripeLink ? `<a class="button button-small" target="_blank" rel="noreferrer" href="${escapeHtml(stripeLink)}">Pay by Card</a>` : ""}
-      ${paypalLink ? `<a class="button button-ghost button-small" target="_blank" rel="noreferrer" href="${escapeHtml(paypalLink)}">Pay with PayPal</a>` : ""}
+    
+    <div class="container footer-bottom">
+      <p>&copy; ${new Date().getFullYear()} ${escapeHtml(settings.brandName)}. All rights reserved.</p>
+      <div class="footer-social">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+      </div>
     </div>
   `;
 }
 
-function renderPricingCards(plans, settings, targetId) {
-  const grid = document.getElementById(targetId);
-  if (!grid) {
-    return;
+// ============================================================================
+// HOMEPAGE RENDERING
+// ============================================================================
+function renderHome(data) {
+  const { pageContent: { home }, services, pricingPlans, faqs, caseStudies, settings } = data;
+  
+  // 1. Hero Section
+  const hero = document.getElementById("heroSection");
+  if (hero) {
+    hero.innerHTML = `
+      <div class="hero-glow"></div>
+      <div class="container">
+        <div class="hero-content animate-fade-up">
+          <span class="section-badge">AI Automation Agency</span>
+          <h1 class="text-gradient">${escapeHtml(home.heroTitle)}</h1>
+          <p class="hero-text">${escapeHtml(home.heroText)}</p>
+          <div class="hero-actions">
+            <a href="${escapeHtml(home.primaryCtaLink)}" class="btn btn-primary btn-lg">${escapeHtml(home.primaryCtaLabel)}</a>
+            <a href="${escapeHtml(home.secondaryCtaLink)}" class="btn btn-secondary btn-lg">${escapeHtml(home.secondaryCtaLabel)}</a>
+          </div>
+          <div class="hero-trust">
+            <div class="hero-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> No long-term contracts</div>
+            <div class="hero-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Built for Shopify</div>
+          </div>
+      </div>
+    `;
   }
 
-  grid.innerHTML = plans
-    .map((plan) => `
-      <article class="package-card ${plan.highlight ? "highlight-card" : ""}">
-        ${plan.highlight ? '<p class="card-tag">Recommended</p>' : ""}
-        <div class="package-card-head">
-          <h3 class="card-title">${escapeHtml(plan.name)}</h3>
-          <div class="price-display">${escapeHtml(plan.price)}</div>
+  // 2. Integration Strip
+  const strip = document.getElementById("integrationStrip");
+  if (strip) {
+    strip.innerHTML = `
+      <div class="container">
+        <div class="integration-logos">
+          <div class="integration-logo">Shopify</div>
+          <div class="integration-logo">n8n</div>
+          <div class="integration-logo">OpenAI</div>
+          <div class="integration-logo">WhatsApp</div>
+          <div class="integration-logo">Google Sheets</div>
+          <div class="integration-logo">Stripe</div>
         </div>
-        <p>${escapeHtml(plan.summary)}</p>
-        <ul>${plan.features.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-        ${paymentButtons(plan, settings)}
-      </article>
-    `)
-    .join("");
-}
-
-function renderCaseStudies(caseStudies, targetId) {
-  const grid = document.getElementById(targetId);
-  if (!grid) {
-    return;
+      </div>
+    `;
   }
 
-  grid.innerHTML = caseStudies
-    .map((item) => `
-      <article class="package-card">
-        <p class="card-tag">${escapeHtml(item.clientType)}</p>
-        <h3 class="card-title">${escapeHtml(item.title)}</h3>
-        <p><strong>Challenge:</strong> ${escapeHtml(item.challenge)}</p>
-        <p><strong>Solution:</strong> ${escapeHtml(item.solution)}</p>
-        <ul>${item.results.map((result) => `<li>${escapeHtml(result)}</li>`).join("")}</ul>
-        <a class="button button-small" href="${escapeHtml(item.ctaLink)}">${escapeHtml(item.ctaLabel)}</a>
-      </article>
-    `)
-    .join("");
-}
-
-function renderTestimonials(testimonials, targetId) {
-  const grid = document.getElementById(targetId);
-  if (!grid) {
-    return;
+  // 3. Problem Section
+  const problem = document.getElementById("problemSection");
+  if (problem) {
+    problem.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">${escapeHtml(home.benefitsTitle)}</h2>
+          <p>${escapeHtml(home.benefitsIntro || "Manual operations block growth. Here is what happens when you automate.")}</p>
+        </div>
+        <div class="grid-3">
+          <div class="card animate-fade-up delay-100">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <h3>Reduce Operational Cost</h3>
+            <p>Replace expensive manual data entry, content creation, and customer support with AI agents that work 24/7 without a salary.</p>
+          </div>
+          <div class="card animate-fade-up delay-200">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <h3>Scale Output Volume</h3>
+            <p>Publish 30 SEO articles a month or answer 10,000 customer inquiries a day without hiring a single new team member.</p>
+          </div>
+          <div class="card animate-fade-up delay-300">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <h3>Consistent Quality</h3>
+            <p>Automated systems execute exactly as programmed every single time. No off-days, no human error, no missed deadlines.</p>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  grid.innerHTML = testimonials
-    .map((item) => `
-      <article class="package-card">
-        <p class="card-tag">${stars(item.rating)}</p>
-        <h3 class="card-title">${escapeHtml(item.name)}</h3>
-        <p class="muted-copy">${escapeHtml(item.role)} • ${escapeHtml(item.company)}</p>
-        <p>${escapeHtml(item.quote)}</p>
-        <p><strong>Result:</strong> ${escapeHtml(item.result)}</p>
-      </article>
-    `)
-    .join("");
-}
+  // 4. Services Section
+  const servicesSec = document.getElementById("servicesSection");
+  if (servicesSec) {
+    const activeServices = services.filter(s => !s.legacy);
+    
+    // Update footer services list while we have them
+    const footerSvc = document.getElementById("footerServicesList");
+    if (footerSvc) {
+      footerSvc.innerHTML = activeServices.map(s => `<li><a href="${serviceLink(s)}">${escapeHtml(s.title)}</a></li>`).join('');
+    }
 
-function renderFaqs(faqs, targetId, limit = null) {
-  const container = document.getElementById(targetId);
-  if (!container) {
-    return;
+    servicesSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Our Systems</span>
+          <h2 class="text-gradient">Ready-to-deploy automation systems</h2>
+          <p>Productized AI workflows built specifically for modern ecommerce brands.</p>
+        </div>
+        <div class="grid-2">
+          ${activeServices.map((svc, i) => `
+            <div class="card service-card animate-fade-up delay-${(i%2+1)*100} ${svc.featured ? 'featured' : ''}">
+              <div class="service-header">
+                ${svc.imageUrl ? `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px solid var(--line); position: relative;"><img src="${escapeHtml(svc.imageUrl)}" alt="${escapeHtml(svc.imageAlt || svc.title)}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"> <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem; position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem;">No image available</div>`}
+                <h3>${escapeHtml(svc.title)}</h3>
+                <div class="service-price">${escapeHtml(svc.price)}</div>
+              </div>
+              <p>${escapeHtml(svc.description)}</p>
+              <ul class="service-features">
+                ${svc.benefits.slice(0, 4).map(b => `
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(b)}</li>
+                `).join('')}
+              </ul>
+              <div class="service-footer">
+                <a href="${serviceLink(svc)}" class="btn btn-secondary">View System details</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
   }
 
-  const items = limit ? faqs.slice(0, limit) : faqs;
-  container.innerHTML = items
-    .map((faq) => `
-      <article class="faq-card">
-        <h3 class="card-title">${escapeHtml(faq.question)}</h3>
-        <p>${escapeHtml(faq.answer)}</p>
-      </article>
-    `)
-    .join("");
-}
-
-function renderBlogCards(posts, targetId) {
-  const grid = document.getElementById(targetId);
-  if (!grid) {
-    return;
+  // 5. How It Works
+  const steps = document.getElementById("howItWorksSection");
+  if (steps) {
+    steps.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">How we implement</h2>
+          <p>From discovery to a fully automated operation.</p>
+        </div>
+        <div class="steps-container">
+          <div class="step-card animate-fade-up delay-100">
+            <div class="step-number">01</div>
+            <h3>System Mapping</h3>
+            <p>We analyze your current manual workflows and design the automation architecture.</p>
+          </div>
+          <div class="step-card animate-fade-up delay-200">
+            <div class="step-number">02</div>
+            <h3>Integration</h3>
+            <p>We connect your applications (Shopify, CRM) with AI engines (OpenAI, Anthropic).</p>
+          </div>
+          <div class="step-card animate-fade-up delay-300">
+            <div class="step-number">03</div>
+            <h3>Testing</h3>
+            <p>We run shadow testing to ensure the AI output matches your brand guidelines exactly.</p>
+          </div>
+          <div class="step-card animate-fade-up delay-400">
+            <div class="step-number">04</div>
+            <h3>Deployment</h3>
+            <p>The system goes live, replacing manual labor with automated execution 24/7.</p>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
-  grid.innerHTML = posts
-    .map((post) => `
-      <article class="package-card">
-        <p class="card-tag">${escapeHtml(post.category)}</p>
-        <h3 class="card-title">${escapeHtml(post.title)}</h3>
-        <p>${escapeHtml(post.excerpt)}</p>
-        <p class="muted-copy">${escapeHtml(post.publishedAt)} • ${escapeHtml(post.author)}</p>
-        <a class="button button-small" href="${blogLink(post)}">Read Article</a>
-      </article>
-    `)
-    .join("");
-}
+  // 7. Case Study
+  const caseStudySec = document.getElementById("caseStudySection");
+  if (caseStudySec && caseStudies && caseStudies.length > 0) {
+    const cs = caseStudies[0];
+    caseStudySec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Case Study</span>
+          <h2 class="text-gradient">Real business outcomes</h2>
+        </div>
+        <div class="card case-study-card animate-fade-up delay-100">
+          <div>
+            <span class="case-study-meta">${escapeHtml(cs.clientType)}</span>
+            <h3 style="font-size: 2rem; margin-bottom: 24px;">${escapeHtml(cs.title)}</h3>
+            <p style="margin-bottom: 24px;"><strong>The Challenge:</strong> ${escapeHtml(cs.challenge)}</p>
+            <p style="margin-bottom: 32px;"><strong>The Solution:</strong> ${escapeHtml(cs.solution)}</p>
+            <a href="${escapeHtml(cs.ctaLink)}" class="btn btn-primary">${escapeHtml(cs.ctaLabel)}</a>
+          </div>
+          <div class="case-study-results">
+            <h4 style="color: var(--text); margin-bottom: 24px; font-size: 1.2rem;">The Results</h4>
+            ${cs.results.map(r => `
+              <div class="result-item">
+                <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                <div style="color: var(--text-secondary); font-size: 1.1rem;">${escapeHtml(r)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-function renderHome(publicData) {
-  const { settings, pageContent, services, caseStudies, testimonials, pricingPlans, faqs } = publicData;
-  const hero = document.getElementById("homeHero");
-  const trustStrip = document.getElementById("trustStrip");
-  const benefitsHeading = document.getElementById("benefitsHeading");
-  const benefitCards = document.getElementById("benefitCards");
-  const processGrid = document.getElementById("processGrid");
+  // 9. Pricing
+  const pricingSec = document.getElementById("pricingSection");
+  if (pricingSec) {
+    pricingSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Pricing</span>
+          <h2 class="text-gradient">Simple, transparent pricing</h2>
+          <p>Choose the automation system that fits your brand.</p>
+        </div>
+        <div class="grid-3">
+          ${pricingPlans.map((plan, i) => `
+            <div class="card pricing-card animate-fade-up delay-${(i+1)*100} ${plan.highlight ? 'highlight' : ''}">
+              ${plan.highlight ? '<span class="section-badge" style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); margin:0; background:var(--accent); color:#fff; border:none;">Most Popular</span>' : ''}
+              <div class="plan-name">${escapeHtml(plan.name)}</div>
+              <div class="plan-price">${escapeHtml(plan.price)}</div>
+              <div class="plan-summary">${escapeHtml(plan.summary)}</div>
+              <ul class="pricing-features">
+                ${plan.features.map(f => `
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ${escapeHtml(f)}</li>
+                `).join('')}
+              </ul>
+              <a href="/checkout.html?serviceId=${escapeHtml(plan.id)}" class="btn ${plan.highlight ? 'btn-primary' : 'btn-secondary'}" style="width: 100%;">Get Started</a>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 10. FAQ
+  const faqSec = document.getElementById("faqSection");
+  if (faqSec) {
+    faqSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">Frequently Asked Questions</h2>
+        </div>
+        <div class="faq-list">
+          ${faqs.map((f, i) => `
+            <details class="faq-item animate-fade-up delay-${(i%5)*100}">
+              <summary class="faq-summary">
+                ${escapeHtml(f.question)}
+                <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </summary>
+              <div class="faq-answer">${escapeHtml(f.answer)}</div>
+            </details>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 11. Final CTA
   const finalCta = document.getElementById("finalCtaSection");
-
-  hero.innerHTML = `
-    <div class="hero-copy">
-      <p class="eyebrow">${escapeHtml(settings.brandName)}</p>
-      <h1>${escapeHtml(pageContent.home.heroTitle)}</h1>
-      <p class="hero-text">${escapeHtml(pageContent.home.heroText)}</p>
-      <div class="hero-actions">
-        <a class="button" href="${escapeHtml(pageContent.home.primaryCtaLink)}">${escapeHtml(pageContent.home.primaryCtaLabel)}</a>
-        <a class="button button-ghost" href="${escapeHtml(pageContent.home.secondaryCtaLink)}">${escapeHtml(pageContent.home.secondaryCtaLabel)}</a>
+  if (finalCta) {
+    finalCta.innerHTML = `
+      <div class="final-cta-bg"></div>
+      <div class="container relative z-10 animate-fade-up">
+        <h2 class="text-gradient">${escapeHtml(home.finalCtaTitle)}</h2>
+        <p>${escapeHtml(home.finalCtaText)}</p>
+        <a href="${escapeHtml(home.finalCtaLink)}" class="btn btn-primary btn-lg">${escapeHtml(home.finalCtaLabel)}</a>
       </div>
-      <ul class="hero-points">
-        <li>Automate operations and lead flow</li>
-        <li>Scale premium AI content systems</li>
-        <li>Deploy business-ready AI agents</li>
-      </ul>
-    </div>
-    <div class="hero-panel">
-      <div class="hero-logo-card glass-card">
-        <img src="/${escapeHtml(settings.logoPath)}" alt="${escapeHtml(settings.brandName)} logo">
-      </div>
-      <div class="dashboard-preview glass-card">
-        <div class="preview-head">
-          <span class="pill">Built for growth</span>
-          <strong>What FlowAgent helps businesses do</strong>
-        </div>
-        <div class="preview-grid">
-          <article><h3>Save time</h3><p>Remove repetitive work and shorten response times across your business.</p></article>
-          <article><h3>Increase efficiency</h3><p>Replace scattered manual tasks with cleaner systems and clearer execution.</p></article>
-          <article><h3>Scale intelligently</h3><p>Turn AI into a practical operating advantage, not just a trend.</p></article>
-        </div>
-      </div>
-    </div>
-  `;
-
-  trustStrip.innerHTML = `
-    <div>AI automation architecture</div>
-    <div>Premium AI video systems</div>
-    <div>RAG chatbot implementation</div>
-    <div>Lead and CRM automation</div>
-  `;
-
-  benefitsHeading.innerHTML = `
-    <p class="eyebrow">Why Choose Us</p>
-    <h2>${escapeHtml(pageContent.home.benefitsTitle)}</h2>
-    <p>${escapeHtml(pageContent.home.benefitsIntro)}</p>
-  `;
-
-  benefitCards.innerHTML = [
-    ["Business-first thinking", "We build around revenue, operations, response times, and delivery quality."],
-    ["Premium implementation", "Your systems should feel clean, reliable, and trustworthy for business use."],
-    ["Multi-channel leverage", "We connect AI across content, lead flow, support, and internal operations."],
-    ["Modern client experience", "Visitors should feel that FlowAgent can modernize how their business works."]
-  ]
-    .map(([title, text]) => `<article class="stat-box"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></article>`)
-    .join("");
-
-  processGrid.innerHTML = [
-    ["01", "Audit the opportunity", "We identify the highest-value AI use cases in your current workflow."],
-    ["02", "Design the system", "We map the process, data flow, messaging, and automation logic."],
-    ["03", "Implement cleanly", "We build the workflow, content engine, or AI agent with business use in mind."],
-    ["04", "Launch and optimize", "We help you move from setup to operational leverage with less friction."]
-  ]
-    .map(([step, title, text]) => `<article><span>${step}</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`)
-    .join("");
-
-  renderServiceCards(services.slice(0, 6), settings, "serviceGrid");
-  renderCaseStudies(caseStudies, "featuredCaseStudies");
-  renderTestimonials(testimonials, "testimonialGrid");
-  renderPricingCards(pricingPlans.slice(0, 3), settings, "pricingPlanGrid");
-  renderFaqs(faqs, "faqPreviewList", 4);
-
-  finalCta.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">Ready</p>
-      <h2>${escapeHtml(pageContent.home.finalCtaTitle)}</h2>
-      <p>${escapeHtml(pageContent.home.finalCtaText)}</p>
-      <a class="button" href="${escapeHtml(pageContent.home.finalCtaLink)}">${escapeHtml(pageContent.home.finalCtaLabel)}</a>
-    </div>
-  `;
-}
-
-function renderServicesPage(publicData) {
-  renderServiceCards(publicData.services, publicData.settings, "servicesPageGrid");
-}
-
-function renderAboutPage(publicData) {
-  const aboutHero = document.getElementById("aboutHero");
-  const aboutMission = document.getElementById("aboutMission");
-  const aboutCredibility = document.getElementById("aboutCredibility");
-  const aboutMethodology = document.getElementById("aboutMethodology");
-  const about = publicData.pageContent.about;
-
-  aboutHero.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">About</p>
-      <h2>${escapeHtml(about.headline)}</h2>
-      <p>${escapeHtml(about.intro)}</p>
-    </div>
-  `;
-
-  aboutMission.innerHTML = `
-    <p><strong>Mission:</strong> ${escapeHtml(about.mission)}</p>
-    <p><strong>Why AI matters:</strong> ${escapeHtml(about.whyAi)}</p>
-  `;
-
-  aboutCredibility.innerHTML = about.credibility
-    .map((item) => `<article class="stat-box"><strong>${escapeHtml(item)}</strong><span>FlowAgent is positioned to help modern businesses implement AI with clarity and trust.</span></article>`)
-    .join("");
-
-  aboutMethodology.innerHTML = about.methodology
-    .map((item, index) => `<article><span>0${index + 1}</span><h3>${escapeHtml(item)}</h3><p>FlowAgent uses this principle to keep projects grounded in business value.</p></article>`)
-    .join("");
-}
-
-function renderPricingPage(publicData) {
-  const intro = document.getElementById("pricingIntro");
-  const comparison = document.getElementById("pricingComparisonTable");
-  const bookingForm = document.getElementById("bookingForm");
-  const page = publicData.pageContent.pricing;
-
-  intro.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">Pricing</p>
-      <h2>${escapeHtml(page.headline)}</h2>
-      <p>${escapeHtml(page.intro)}</p>
-    </div>
-  `;
-
-  renderPricingCards(publicData.pricingPlans, publicData.settings, "pricingFullGrid");
-
-  comparison.innerHTML = `
-    <table class="comparison-table">
-      <thead><tr><th>Offer</th><th>Ideal for</th><th>Starting price</th></tr></thead>
-      <tbody>
-        ${publicData.pricingPlans
-          .map((plan) => `<tr><td>${escapeHtml(plan.name)}</td><td>${escapeHtml(plan.comparisonLabel)}</td><td>${escapeHtml(plan.price)}</td></tr>`)
-          .join("")}
-      </tbody>
-    </table>
-  `;
-
-  bookingForm.innerHTML = `
-    <div class="form-grid">
-      <label>Name<input type="text" name="name" required></label>
-      <label>Email<input type="email" name="email" required></label>
-      <label>Phone / WhatsApp<input type="text" name="phone"></label>
-      <label>Company<input type="text" name="company"></label>
-      <label>Service of interest<select name="service">${publicData.services.map((service) => `<option value="${escapeHtml(service.title)}">${escapeHtml(service.title)}</option>`).join("")}</select></label>
-      <label>Preferred date<input type="date" name="preferredDate"></label>
-      <label>Preferred time<input type="text" name="preferredTime" placeholder="Example: 2 PM"></label>
-    </div>
-    <label>Project context<textarea name="message" rows="5" placeholder="Tell us what you want to improve, automate, or launch."></textarea></label>
-    <button class="button" type="submit">Request Consultation</button>
-    <p class="form-note" id="bookingMessage">Booking requests are saved in the admin dashboard.</p>
-  `;
-
-  bindBookingForm();
-}
-
-function renderCaseStudiesPage(publicData) {
-  renderCaseStudies(publicData.caseStudies, "caseStudyGrid");
-}
-
-function renderTestimonialsPage(publicData) {
-  renderTestimonials(publicData.testimonials, "testimonialPageGrid");
-}
-
-function renderBlogPage(publicData) {
-  const intro = document.getElementById("blogIntro");
-  const posts = publicData.blogPosts;
-  intro.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">Blog</p>
-      <h2>${escapeHtml(publicData.pageContent.blog.headline)}</h2>
-      <p>${escapeHtml(publicData.pageContent.blog.intro)}</p>
-    </div>
-  `;
-
-  renderBlogCards(posts, "blogGrid");
-  const search = document.getElementById("blogSearch");
-  if (search && search.dataset.bound !== "true") {
-    search.dataset.bound = "true";
-    search.addEventListener("input", () => {
-      const query = search.value.trim().toLowerCase();
-      const filtered = posts.filter((post) =>
-        [post.title, post.excerpt, post.category, ...(post.tags || [])].join(" ").toLowerCase().includes(query)
-      );
-      renderBlogCards(filtered, "blogGrid");
-    });
-  }
-}
-
-function renderBlogPostPage(publicData) {
-  const slug = window.location.pathname.split("/").pop();
-  const post = publicData.blogPosts.find((item) => item.slug === slug) || publicData.blogPosts[0];
-  const container = document.getElementById("blogPostContainer");
-  if (!container || !post) {
-    return;
+    `;
   }
 
-  document.title = `${post.title} | FlowAgent`;
-  container.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">${escapeHtml(post.category)}</p>
-      <h2>${escapeHtml(post.title)}</h2>
-      <p>${escapeHtml(post.excerpt)}</p>
-      <p class="muted-copy">${escapeHtml(post.publishedAt)} • ${escapeHtml(post.author)}</p>
-    </div>
-    <article class="glass-card dashboard-panel blog-article">${post.contentHtml}</article>
-  `;
+  setupAnimations();
 }
 
-function renderContactPage(publicData) {
-  const intro = document.getElementById("contactIntro");
-  const details = document.getElementById("contactDetailsCard");
-  const form = document.getElementById("contactForm");
+// ============================================================================
+// SERVICE DETAIL RENDERING
+// ============================================================================
+function renderServiceDetailPage(data) {
+  const serviceSlug = window.location.pathname.split("/").pop().replace(".html", "");
+  const service = data.services.find(s => s.slug === serviceSlug);
 
-  intro.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">Contact</p>
-      <h2>${escapeHtml(publicData.pageContent.contact.headline)}</h2>
-      <p>${escapeHtml(publicData.pageContent.contact.intro)}</p>
-    </div>
-  `;
-
-  details.innerHTML = `
-    <h3>Contact details</h3>
-    <ul>
-      <li>Email: ${escapeHtml(publicData.settings.businessEmail)}</li>
-      <li>WhatsApp: ${escapeHtml(publicData.settings.whatsapp || "Add your WhatsApp number in admin")}</li>
-      <li>Country / market: ${escapeHtml(publicData.settings.country)}</li>
-      <li>Address: ${escapeHtml(publicData.settings.address)}</li>
-    </ul>
-  `;
-
-  form.innerHTML = `
-    <div class="form-grid">
-      <label>Name<input type="text" name="name" required></label>
-      <label>Email<input type="email" name="email" required></label>
-      <label>Phone / WhatsApp<input type="text" name="phone"></label>
-      <label>Company<input type="text" name="company"></label>
-      <label>Service<select name="service">${publicData.services.map((service) => `<option value="${escapeHtml(service.title)}">${escapeHtml(service.title)}</option>`).join("")}</select></label>
-      <label>Budget<select name="budget"><option value="">Select budget</option><option>$500 - $1,500</option><option>$1,500 - $5,000</option><option>$5,000+</option></select></label>
-      <label>Preferred contact<select name="preferredContact"><option>Email</option><option>WhatsApp</option><option>Phone</option></select></label>
-    </div>
-    <label>Message<textarea name="message" rows="6" required placeholder="Tell us what you want to automate, build, or improve."></textarea></label>
-    <button class="button" type="submit">Send Request</button>
-    <p class="form-note" id="contactMessage">Your message will appear in the admin dashboard.</p>
-  `;
-
-  bindContactForm();
-}
-
-function renderFaqPage(publicData) {
-  const intro = document.getElementById("faqIntro");
-  intro.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">FAQ</p>
-      <h2>${escapeHtml(publicData.pageContent.faq.headline)}</h2>
-      <p>${escapeHtml(publicData.pageContent.faq.intro)}</p>
-    </div>
-  `;
-  renderFaqs(publicData.faqs, "faqFullList");
-}
-
-function renderServiceDetailPage(publicData) {
-  const slug = document.body.dataset.serviceSlug;
-  const service = publicData.services.find((item) => item.slug === slug);
-  const container = document.getElementById("serviceDetailContainer");
-  if (!container || !service) {
+  if (!service) {
+    document.querySelector("main").innerHTML = `
+      <div class="section"><div class="container" style="text-align:center;">
+        <h2>Service Not Found</h2>
+        <a href="/#servicesSection" class="btn btn-primary" style="margin-top:24px;">View All Services</a>
+      </div></div>
+    `;
     return;
   }
 
   document.title = `${service.title} | FlowAgent`;
-  container.innerHTML = `
-    <div class="section-heading">
-      <p class="eyebrow">Service Detail</p>
-      <h2>${escapeHtml(service.title)}</h2>
-      <p>${escapeHtml(service.description)}</p>
-    </div>
-    <div class="results-layout">
-      <div class="glass-card dashboard-panel">
-        <p><strong>Who it is for:</strong> ${escapeHtml(service.audience)}</p>
-        <h3>Benefits</h3>
-        <ul>${service.benefits.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-        <h3>Deliverables</h3>
-        <ul>${service.deliverables.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-      </div>
-      <div class="glass-card dashboard-panel">
-        <p class="eyebrow">Expected outcomes</p>
-        <ul>${service.outcomes.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-        <p class="eyebrow">Use cases</p>
-        <ul>${service.useCases.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-        ${paymentButtons(service, publicData.settings)}
-        <a class="button button-small" href="/contact">Request This Service</a>
-      </div>
-    </div>
-    <section class="section">
-      <div class="section-heading">
-        <p class="eyebrow">FAQ</p>
-        <h2>Questions about ${escapeHtml(service.title)}</h2>
-      </div>
-      <div class="list-stack">
-        ${service.faq.map((item) => `<article class="faq-card"><h3 class="card-title">${escapeHtml(item.question)}</h3><p>${escapeHtml(item.answer)}</p></article>`).join("")}
+
+  document.querySelector("main").innerHTML = `
+    <section class="hero" style="min-height: 60vh;">
+      <div class="hero-glow"></div>
+      <div class="container grid-2" style="align-items: center; gap: 64px;">
+        <div class="hero-content animate-fade-up">
+          <a href="/#servicesSection" style="color:var(--accent-light); font-weight:600; font-size:0.9rem; margin-bottom:16px; display:inline-block;">← Back to Services</a>
+          <h1 class="text-gradient">${escapeHtml(service.title)}</h1>
+          <p class="hero-text" style="font-size: 1.5rem; color:var(--text);">${escapeHtml(service.price)}</p>
+          <p class="hero-text">${escapeHtml(service.description)}</p>
+          <div class="hero-actions" style="margin-top:40px; justify-content: flex-start;">
+            <a href="/checkout.html?serviceId=${escapeHtml(service.id)}" class="btn btn-primary btn-lg">Checkout Now</a>
+          </div>
+        </div>
+        <div class="hero-visual animate-fade-up delay-200">
+          ${service.imageUrl ? `<div style="position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 60px rgba(0,0,0,0.2);"><img src="${escapeHtml(service.imageUrl)}" alt="${escapeHtml(service.imageAlt || service.title)}" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div style="display: none; width: 100%; height: 100%; background: var(--surface-soft); align-items: center; justify-content: center; color: var(--text-secondary); position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="width: 100%; aspect-ratio: 4/3; border-radius: 24px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">No image available</div>`}
+        </div>
       </div>
     </section>
-    <section class="section">
-      <div class="order-layout">
-        <form class="order-form glass-card" id="quoteForm"></form>
-        <aside class="contact-card">
-          <div class="glass-card panel-stack">
-            <h3>Ideal clients</h3>
-            <p>${escapeHtml(service.audience)}</p>
+
+    <section class="section" style="background: var(--surface-soft); border-top:1px solid var(--line);">
+      <div class="container">
+        <div class="grid-2">
+          <div class="card animate-fade-up">
+            <h3 style="margin-bottom: 24px;">System Benefits</h3>
+            <ul class="service-features" style="margin-top:0;">
+              ${service.benefits.map(b => `
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(b)}</li>
+              `).join('')}
+            </ul>
           </div>
-        </aside>
+          <div class="card animate-fade-up delay-100">
+            <h3 style="margin-bottom: 24px;">Deliverables</h3>
+            <ul class="service-features" style="margin-top:0;">
+              ${service.deliverables.map(b => `
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>${escapeHtml(b)}</li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">Service FAQ</h2>
+        </div>
+        <div class="faq-list">
+          ${(service.faq || []).map((f, i) => `
+            <details class="faq-item animate-fade-up delay-${(i%5)*100}">
+              <summary class="faq-summary">
+                ${escapeHtml(f.question)}
+                <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </summary>
+              <div class="faq-answer">${escapeHtml(f.answer)}</div>
+            </details>
+          `).join('')}
+        </div>
       </div>
     </section>
   `;
 
-  const quoteForm = document.getElementById("quoteForm");
-  if (quoteForm) {
-    quoteForm.innerHTML = `
-      <div class="form-grid">
-        <label>Name<input type="text" name="name" required></label>
-        <label>Email<input type="email" name="email" required></label>
-        <label>Phone / WhatsApp<input type="text" name="phone"></label>
-        <label>Company<input type="text" name="company"></label>
-        <label>Budget<select name="budget"><option value="">Select budget</option><option>$500 - $1,500</option><option>$1,500 - $5,000</option><option>$5,000+</option></select></label>
-        <label>Preferred contact<select name="preferredContact"><option>Email</option><option>WhatsApp</option><option>Phone</option></select></label>
+  setupAnimations();
+}
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+function setupAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+  document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+}
+
+// ============================================================================
+// CORE PAGES RENDERING
+// ============================================================================
+function renderServicesPage(data) {
+  const servicesSec = document.getElementById("servicesSection");
+  if (!servicesSec) return;
+  const activeServices = data.services.filter(s => !s.legacy);
+  servicesSec.innerHTML = `
+    <div class="container">
+      <div class="section-header animate-fade-up">
+        <h1 class="text-gradient">Our Services</h1>
+        <p>Automated growth systems for ecommerce brands.</p>
       </div>
-      <input type="hidden" name="service" value="${escapeHtml(service.title)}">
-      <label>Project details<textarea name="message" rows="6" placeholder="Describe the system or outcome you want." required></textarea></label>
-      <button class="button" type="submit">Request a Quote</button>
-      <p class="form-note" id="quoteMessage">Your quote request will appear in the admin dashboard.</p>
-    `;
-    bindQuoteForm();
-  }
-}
-
-function bindContactForm() {
-  const form = document.getElementById("contactForm");
-  const message = document.getElementById("contactMessage");
-  if (!form || !message || form.dataset.bound === "true") {
-    return;
-  }
-  form.dataset.bound = "true";
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      const formData = new FormData(form);
-      await api("/api/forms/contact", {
-        method: "POST",
-        body: JSON.stringify(Object.fromEntries(formData.entries()))
-      });
-      form.reset();
-      message.textContent = "Message sent successfully!";
-      message.style.color = "var(--success)";
-    } catch (error) {
-      message.textContent = "Something went wrong. Please try again.";
-      message.style.color = "var(--danger)";
-    }
-  });
-}
-
-function bindQuoteForm() {
-  const form = document.getElementById("quoteForm");
-  const message = document.getElementById("quoteMessage");
-  if (!form || !message || form.dataset.bound === "true") {
-    return;
-  }
-  form.dataset.bound = "true";
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      const formData = new FormData(form);
-      await api("/api/forms/quote", {
-        method: "POST",
-        body: JSON.stringify(Object.fromEntries(formData.entries()))
-      });
-      form.reset();
-      message.textContent = "Quote request sent successfully!";
-      message.style.color = "var(--success)";
-    } catch (error) {
-      message.textContent = "Something went wrong. Please try again.";
-      message.style.color = "var(--danger)";
-    }
-  });
-}
-
-function bindBookingForm() {
-  const form = document.getElementById("bookingForm");
-  const message = document.getElementById("bookingMessage");
-  if (!form || !message || form.dataset.bound === "true") {
-    return;
-  }
-  form.dataset.bound = "true";
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      const formData = new FormData(form);
-      await api("/api/forms/booking", {
-        method: "POST",
-        body: JSON.stringify(Object.fromEntries(formData.entries()))
-      });
-      form.reset();
-      message.textContent = "Booking request sent successfully!";
-      message.style.color = "var(--success)";
-    } catch (error) {
-      message.textContent = "Something went wrong. Please try again.";
-      message.style.color = "var(--danger)";
-    }
-  });
-}
-
-function renderOverviewCards(data) {
-  const target = document.getElementById("overviewCards");
-  if (!target) {
-    return;
-  }
-  target.innerHTML = `
-    <article class="overview-card"><strong>${data.services.length}</strong><span class="muted-copy">Services</span></article>
-    <article class="overview-card"><strong>${data.pricingPlans.length}</strong><span class="muted-copy">Pricing plans</span></article>
-    <article class="overview-card"><strong>${data.leads.length}</strong><span class="muted-copy">Leads</span></article>
-    <article class="overview-card"><strong>${data.bookings.length}</strong><span class="muted-copy">Bookings</span></article>
-  `;
-}
-
-function bindLogin() {
-  const form = document.getElementById("loginForm");
-  const message = document.getElementById("loginMessage");
-  if (!form || form.dataset.bound === "true") {
-    return;
-  }
-  form.dataset.bound = "true";
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    try {
-      await api("/api/login", {
-        method: "POST",
-        body: JSON.stringify(Object.fromEntries(formData.entries()))
-      });
-      message.textContent = "Login successful.";
-      await refreshAdmin();
-    } catch (error) {
-      message.textContent = error.message;
-    }
-  });
-}
-
-function showAdmin(loggedIn) {
-  const app = document.getElementById("adminApp");
-  const login = document.getElementById("adminLoginView");
-  if (app) app.classList.toggle("hidden", !loggedIn);
-  if (login) login.classList.toggle("hidden", loggedIn);
-}
-
-function renderAdminForms(data) {
-  adminState.data = data;
-  renderOverviewCards(data);
-  renderSettingsForm(data.settings);
-  renderPageContentForm(data.pageContent);
-  renderSeoForm(data.seo);
-  renderServiceAdmin(data.services);
-  renderPricingAdmin(data.pricingPlans);
-  renderTestimonialsAdmin(data.testimonials);
-  renderCaseStudiesAdmin(data.caseStudies);
-  renderFaqAdmin(data.faqs);
-  renderBlogAdmin(data.blogPosts);
-  renderMediaAdmin(data.media);
-  renderLeadAdmin(data.leads);
-  renderBookingAdmin(data.bookings);
-  renderNewsletterAdmin(data.newsletterSubscribers);
-  renderPasswordForm();
-  bindAdminActions();
-}
-
-function renderSettingsForm(settings) {
-  const form = document.getElementById("settingsForm");
-  if (!form) return;
-  form.innerHTML = `
-    <div class="form-grid">
-      <label>Brand Name<input name="brandName" value="${escapeHtml(settings.brandName)}"></label>
-      <label>Tagline<input name="tagline" value="${escapeHtml(settings.tagline)}"></label>
-      <label>Business Email<input name="businessEmail" value="${escapeHtml(settings.businessEmail)}"></label>
-      <label>Admin Email<input name="adminEmail" value="${escapeHtml(settings.adminEmail)}"></label>
-      <label>WhatsApp<input name="whatsapp" value="${escapeHtml(settings.whatsapp)}"></label>
-      <label>Phone<input name="phone" value="${escapeHtml(settings.phone)}"></label>
-      <label>Booking Link<input name="bookingLink" value="${escapeHtml(settings.bookingLink)}"></label>
-      <label>Currency<input name="currency" value="${escapeHtml(settings.currency)}"></label>
-      <label>Country<input name="country" value="${escapeHtml(settings.country)}"></label>
-      <label>Logo Path<input name="logoPath" value="${escapeHtml(settings.logoPath)}"></label>
-      <label>Stripe Link<input name="defaultStripeLink" value="${escapeHtml(settings.defaultStripeLink)}"></label>
-      <label>PayPal Link<input name="defaultPaypalLink" value="${escapeHtml(settings.defaultPaypalLink)}"></label>
-      <label>Bank Name<input name="bankName" value="${escapeHtml(settings.bankName)}"></label>
-      <label>Account Holder<input name="accountHolder" value="${escapeHtml(settings.accountHolder)}"></label>
-      <label>Account Number<input name="accountNumber" value="${escapeHtml(settings.accountNumber)}"></label>
-      <label>IBAN<input name="iban" value="${escapeHtml(settings.iban)}"></label>
-      <label>SWIFT<input name="swift" value="${escapeHtml(settings.swift)}"></label>
-      <label>Address<input name="address" value="${escapeHtml(settings.address)}"></label>
-      <label>Newsletter Title<input name="newsletterTitle" value="${escapeHtml(settings.newsletterTitle)}"></label>
+      <div class="grid-2">
+        ${activeServices.map((svc, i) => `
+          <div class="card service-card animate-fade-up delay-${(i%2+1)*100} ${svc.featured ? 'featured' : ''}">
+            <div class="service-header">
+              ${svc.imageUrl ? `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px solid var(--line); position: relative;"><img src="${escapeHtml(svc.imageUrl)}" alt="${escapeHtml(svc.imageAlt || svc.title)}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"> <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem; position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem;">No image available</div>`}
+              <h3>${escapeHtml(svc.title)}</h3>
+              <div class="service-price">${escapeHtml(svc.price)}</div>
+            </div>
+            <p>${escapeHtml(svc.description)}</p>
+            <ul class="service-features">
+              ${svc.benefits.slice(0, 4).map(b => `
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(b)}</li>
+              `).join('')}
+            </ul>
+            <div class="service-footer">
+              <a href="${serviceLink(svc)}" class="btn btn-secondary">View System details</a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
-    <label>Newsletter Text<textarea name="newsletterText" rows="2">${escapeHtml(settings.newsletterText)}</textarea></label>
-    <label>Footer Blurb<textarea name="footerBlurb" rows="3">${escapeHtml(settings.footerBlurb)}</textarea></label>
-    <label>Bank Instructions<textarea name="bankInstructions" rows="3">${escapeHtml(settings.bankInstructions)}</textarea></label>
-    <button class="button button-small" type="submit">Save Settings</button>
-    <p class="form-note" id="settingsMessage"></p>
   `;
 }
 
-function renderPageContentForm(pageContent) {
-  const form = document.getElementById("pageContentForm");
-  if (!form) return;
-  form.innerHTML = `
-    <label>Home Hero Title<textarea name="homeHeroTitle" rows="2">${escapeHtml(pageContent.home.heroTitle)}</textarea></label>
-    <label>Home Hero Text<textarea name="homeHeroText" rows="3">${escapeHtml(pageContent.home.heroText)}</textarea></label>
-    <label>Home Final CTA Title<textarea name="homeFinalCtaTitle" rows="2">${escapeHtml(pageContent.home.finalCtaTitle)}</textarea></label>
-    <label>Home Final CTA Text<textarea name="homeFinalCtaText" rows="3">${escapeHtml(pageContent.home.finalCtaText)}</textarea></label>
-    <label>About Headline<textarea name="aboutHeadline" rows="2">${escapeHtml(pageContent.about.headline)}</textarea></label>
-    <label>About Intro<textarea name="aboutIntro" rows="3">${escapeHtml(pageContent.about.intro)}</textarea></label>
-    <label>Pricing Headline<textarea name="pricingHeadline" rows="2">${escapeHtml(pageContent.pricing.headline)}</textarea></label>
-    <label>Contact Headline<textarea name="contactHeadline" rows="2">${escapeHtml(pageContent.contact.headline)}</textarea></label>
-    <label>FAQ Headline<textarea name="faqHeadline" rows="2">${escapeHtml(pageContent.faq.headline)}</textarea></label>
-    <label>Blog Headline<textarea name="blogHeadline" rows="2">${escapeHtml(pageContent.blog.headline)}</textarea></label>
-    <button class="button button-small" type="submit">Save Page Content</button>
-    <p class="form-note" id="pageContentMessage"></p>
-  `;
-}
-
-function renderSeoForm(seo) {
-  const form = document.getElementById("seoForm");
-  if (!form) return;
-  form.innerHTML = `
-    <label>Default Title<input name="defaultTitle" value="${escapeHtml(seo.defaultTitle)}"></label>
-    <label>Default Description<textarea name="defaultDescription" rows="3">${escapeHtml(seo.defaultDescription)}</textarea></label>
-    <label>Site URL<input name="siteUrl" value="${escapeHtml(seo.siteUrl)}"></label>
-    <label>Twitter Handle<input name="twitterHandle" value="${escapeHtml(seo.twitterHandle)}"></label>
-    <label>Page SEO JSON<textarea name="pagesJson" rows="10">${escapeHtml(JSON.stringify(seo.pages, null, 2))}</textarea></label>
-    <button class="button button-small" type="submit">Save SEO</button>
-    <p class="form-note" id="seoMessage"></p>
-  `;
-}
-
-function renderCollectionList(targetId, items, labelGetter, editAttr, deleteAttr) {
-  const target = document.getElementById(targetId);
-  if (!target) return;
-  target.innerHTML = items
-    .map((item) => `
-      <article class="admin-item">
-        <div class="admin-item-head">
-          <div><h4 class="card-title">${escapeHtml(labelGetter(item))}</h4></div>
-          <div class="inline-actions">
-            <button class="button button-ghost button-small" type="button" ${editAttr}="${escapeHtml(item.id)}">Edit</button>
-            <button class="button button-danger button-small" type="button" ${deleteAttr}="${escapeHtml(item.id)}">Delete</button>
+function renderPricingPage(data) {
+  const pricingSec = document.getElementById("pricingSection");
+  if (!pricingSec) return;
+  pricingSec.innerHTML = `
+    <div class="container">
+      <div class="section-header animate-fade-up">
+        <h1 class="text-gradient">Simple, Transparent Pricing</h1>
+        <p>Choose the automation system that fits your brand.</p>
+      </div>
+      <div class="grid-3">
+        ${data.pricingPlans.map((plan, i) => `
+          <div class="card pricing-card animate-fade-up delay-${(i%3+1)*100} ${plan.highlight ? 'featured' : ''}">
+            <h3>${escapeHtml(plan.name)}</h3>
+            <div class="pricing-price">${escapeHtml(plan.price)}</div>
+            <p class="pricing-summary">${escapeHtml(plan.summary)}</p>
+            <ul class="pricing-features">
+              ${plan.features.map(f => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(f)}</li>`).join('')}
+            </ul>
+            <div class="pricing-footer">
+              <a href="/checkout.html" class="btn ${plan.highlight ? 'btn-primary' : 'btn-secondary'}" style="width: 100%">Get Started</a>
+            </div>
           </div>
-        </div>
-      </article>
-    `)
-    .join("");
-}
-
-function renderServiceAdmin(services) {
-  const form = document.getElementById("serviceForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Slug<input name="slug"></label>
-        <label>Title<input name="title"></label>
-        <label>Price<input name="price"></label>
-        <label>Audience<input name="audience"></label>
-        <label>Stripe Link<input name="stripeLink"></label>
-        <label>PayPal Link<input name="paypalLink"></label>
+        `).join('')}
       </div>
-      <label>Description<textarea name="description" rows="3"></textarea></label>
-      <label>Benefits<textarea name="benefits" rows="4" placeholder="One per line"></textarea></label>
-      <label>Deliverables<textarea name="deliverables" rows="4" placeholder="One per line"></textarea></label>
-      <label>Use Cases<textarea name="useCases" rows="4" placeholder="One per line"></textarea></label>
-      <label>Outcomes<textarea name="outcomes" rows="4" placeholder="One per line"></textarea></label>
-      <label>FAQ JSON<textarea name="faqJson" rows="5" placeholder='[{"question":"...","answer":"..."}]'></textarea></label>
-      <label class="checkbox-line"><input type="checkbox" name="featured">Featured service</label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Service</button><button class="button button-ghost button-small" type="button" id="clearServiceForm">Clear</button></div>
-      <p class="form-note" id="serviceMessage"></p>
-    `;
-  }
-  renderCollectionList("serviceAdminList", services, (item) => `${item.title} • ${item.price}`, "data-edit-service", "data-delete-service");
-}
-
-function renderPricingAdmin(plans) {
-  const form = document.getElementById("pricingForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Name<input name="name"></label>
-        <label>Price<input name="price"></label>
-        <label>Comparison Label<input name="comparisonLabel"></label>
-        <label>Stripe Link<input name="stripeLink"></label>
-        <label>PayPal Link<input name="paypalLink"></label>
-      </div>
-      <label>Summary<textarea name="summary" rows="3"></textarea></label>
-      <label>Features<textarea name="features" rows="4" placeholder="One per line"></textarea></label>
-      <label class="checkbox-line"><input type="checkbox" name="highlight">Highlight this plan</label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Pricing Plan</button><button class="button button-ghost button-small" type="button" id="clearPricingForm">Clear</button></div>
-      <p class="form-note" id="pricingMessage"></p>
-    `;
-  }
-  renderCollectionList("pricingAdminList", plans, (item) => `${item.name} • ${item.price}`, "data-edit-plan", "data-delete-plan");
-}
-
-function renderTestimonialsAdmin(testimonials) {
-  const form = document.getElementById("testimonialForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Name<input name="name"></label>
-        <label>Role<input name="role"></label>
-        <label>Company<input name="company"></label>
-        <label>Rating<input name="rating" type="number" min="1" max="5"></label>
-      </div>
-      <label>Quote<textarea name="quote" rows="4"></textarea></label>
-      <label>Result<textarea name="result" rows="2"></textarea></label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Testimonial</button><button class="button button-ghost button-small" type="button" id="clearTestimonialForm">Clear</button></div>
-      <p class="form-note" id="testimonialMessage"></p>
-    `;
-  }
-  renderCollectionList("testimonialAdminList", testimonials, (item) => `${item.name} • ${item.company}`, "data-edit-testimonial", "data-delete-testimonial");
-}
-
-function renderCaseStudiesAdmin(items) {
-  const form = document.getElementById("caseStudyForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Slug<input name="slug"></label>
-        <label>Title<input name="title"></label>
-        <label>Client Type<input name="clientType"></label>
-        <label>CTA Label<input name="ctaLabel"></label>
-        <label>CTA Link<input name="ctaLink"></label>
-      </div>
-      <label>Challenge<textarea name="challenge" rows="3"></textarea></label>
-      <label>Solution<textarea name="solution" rows="3"></textarea></label>
-      <label>Results<textarea name="results" rows="4" placeholder="One per line"></textarea></label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Case Study</button><button class="button button-ghost button-small" type="button" id="clearCaseStudyForm">Clear</button></div>
-      <p class="form-note" id="caseStudyMessage"></p>
-    `;
-  }
-  renderCollectionList("caseStudyAdminList", items, (item) => item.title, "data-edit-case-study", "data-delete-case-study");
-}
-
-function renderFaqAdmin(items) {
-  const form = document.getElementById("faqForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Category<input name="category"></label>
-        <label>Question<input name="question"></label>
-      </div>
-      <label>Answer<textarea name="answer" rows="4"></textarea></label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save FAQ</button><button class="button button-ghost button-small" type="button" id="clearFaqForm">Clear</button></div>
-      <p class="form-note" id="faqMessage"></p>
-    `;
-  }
-  renderCollectionList("faqAdminList", items, (item) => item.question, "data-edit-faq", "data-delete-faq");
-}
-
-function renderBlogAdmin(items) {
-  const form = document.getElementById("blogForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Slug<input name="slug"></label>
-        <label>Title<input name="title"></label>
-        <label>Category<input name="category"></label>
-        <label>Author<input name="author"></label>
-        <label>Published At<input name="publishedAt"></label>
-      </div>
-      <label>Excerpt<textarea name="excerpt" rows="3"></textarea></label>
-      <label>Tags<textarea name="tags" rows="2" placeholder="One per line"></textarea></label>
-      <label>Meta Description<textarea name="metaDescription" rows="3"></textarea></label>
-      <label>Content HTML<textarea name="contentHtml" rows="10"></textarea></label>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Blog Post</button><button class="button button-ghost button-small" type="button" id="clearBlogForm">Clear</button></div>
-      <p class="form-note" id="blogMessage"></p>
-    `;
-  }
-  renderCollectionList("blogAdminList", items, (item) => item.title, "data-edit-blog", "data-delete-blog");
-}
-
-function renderMediaAdmin(items) {
-  const form = document.getElementById("mediaForm");
-  if (form) {
-    form.innerHTML = `
-      <input type="hidden" name="id">
-      <div class="form-grid">
-        <label>Name<input name="name"></label>
-        <label>URL<input name="url"></label>
-        <label>Alt Text<input name="alt"></label>
-      </div>
-      <div class="inline-actions"><button class="button button-small" type="submit">Save Media Item</button><button class="button button-ghost button-small" type="button" id="clearMediaForm">Clear</button></div>
-      <p class="form-note" id="mediaMessage"></p>
-    `;
-  }
-  renderCollectionList("mediaAdminList", items, (item) => item.name, "data-edit-media", "data-delete-media");
-}
-
-function renderLeadAdmin(items) {
-  const target = document.getElementById("leadList");
-  if (!target) return;
-  target.innerHTML = items.length
-    ? items.map((lead) => `
-      <article class="order-card">
-        <div class="order-card-head"><div><h4 class="order-title">${escapeHtml(lead.name)}</h4><p class="muted-copy">${escapeHtml(lead.type)} • ${escapeHtml(lead.company || "No company")}</p></div><span class="status-badge status-${escapeHtml(lead.status)}">${escapeHtml(lead.status)}</span></div>
-        <div class="order-card-body">
-          <div class="order-meta-grid">
-            <div class="order-meta"><strong>Email</strong><span>${escapeHtml(lead.email)}</span></div>
-            <div class="order-meta"><strong>Service</strong><span>${escapeHtml(lead.service)}</span></div>
-            <div class="order-meta"><strong>Budget</strong><span>${escapeHtml(lead.budget)}</span></div>
-            <div class="order-meta"><strong>Preferred Contact</strong><span>${escapeHtml(lead.preferredContact || "")}</span></div>
-          </div>
-          <div class="order-meta"><strong>Message</strong><span>${escapeHtml(lead.message)}</span></div>
-        </div>
-        <div class="order-card-foot"><select data-update-lead="${escapeHtml(lead.id)}" class="status-select">${["new","contacted","in-progress","complete"].map((s)=>`<option value="${s}" ${lead.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="button button-danger button-small" type="button" data-delete-lead="${escapeHtml(lead.id)}">Delete</button></div>
-      </article>
-    `).join("")
-    : '<div class="empty-state">No leads yet.</div>';
-}
-
-function renderBookingAdmin(items) {
-  const target = document.getElementById("bookingList");
-  if (!target) return;
-  target.innerHTML = items.length
-    ? items.map((booking) => `
-      <article class="order-card">
-        <div class="order-card-head"><div><h4 class="order-title">${escapeHtml(booking.name)}</h4><p class="muted-copy">${escapeHtml(booking.company || "No company")}</p></div><span class="status-badge status-${escapeHtml(booking.status)}">${escapeHtml(booking.status)}</span></div>
-        <div class="order-card-body">
-          <div class="order-meta-grid">
-            <div class="order-meta"><strong>Email</strong><span>${escapeHtml(booking.email)}</span></div>
-            <div class="order-meta"><strong>Service</strong><span>${escapeHtml(booking.service)}</span></div>
-            <div class="order-meta"><strong>Date</strong><span>${escapeHtml(booking.preferredDate)}</span></div>
-            <div class="order-meta"><strong>Time</strong><span>${escapeHtml(booking.preferredTime)}</span></div>
-          </div>
-          <div class="order-meta"><strong>Message</strong><span>${escapeHtml(booking.message)}</span></div>
-        </div>
-        <div class="order-card-foot"><select data-update-booking="${escapeHtml(booking.id)}" class="status-select">${["new","contacted","in-progress","complete"].map((s)=>`<option value="${s}" ${booking.status===s?"selected":""}>${s}</option>`).join("")}</select><button class="button button-danger button-small" type="button" data-delete-booking="${escapeHtml(booking.id)}">Delete</button></div>
-      </article>
-    `).join("")
-    : '<div class="empty-state">No bookings yet.</div>';
-}
-
-function renderNewsletterAdmin(items) {
-  const target = document.getElementById("newsletterList");
-  if (!target) return;
-  target.innerHTML = items.length
-    ? items.map((item) => `<article class="admin-item"><div class="admin-item-head"><div><h4 class="card-title">${escapeHtml(item.email)}</h4><p class="muted-copy">${escapeHtml(item.submittedAt)}</p></div></div></article>`).join("")
-    : '<div class="empty-state">No subscribers yet.</div>';
-}
-
-function renderPasswordForm() {
-  const form = document.getElementById("passwordForm");
-  if (!form) return;
-  form.innerHTML = `
-    <label>Current Password<input type="password" name="currentPassword"></label>
-    <label>New Password<input type="password" name="nextPassword"></label>
-    <button class="button button-small" type="submit">Change Password</button>
-    <p class="form-note" id="passwordMessage"></p>
+    </div>
   `;
 }
 
-function bindAdminActions() {
-  bindSimpleSubmit("settingsForm", async (form) => {
-    await api("/api/settings", { method: "PUT", body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) });
-  }, "settingsMessage");
+function renderContactPage(data) {
+  const contactSec = document.getElementById("contactSection");
+  if (!contactSec) return;
+  contactSec.innerHTML = `
+    <div class="container">
+      <div class="section-header animate-fade-up">
+        <h1 class="text-gradient">Contact Us</h1>
+        <p>Tell us what your brand does manually today.</p>
+      </div>
+      <div style="max-width: 600px; margin: 0 auto; background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--line);" class="animate-fade-up delay-100">
+        <form id="contactForm" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Name</label>
+            <input type="text" name="name" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Email</label>
+            <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Message</label>
+            <textarea name="message" required rows="5" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Send Message</button>
+        </form>
+        <div id="contactStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
+          Message sent successfully! We will reach out soon.
+        </div>
+      </div>
+    </div>
+  `;
 
-  bindSimpleSubmit("pageContentForm", async (form) => {
-    const fd = new FormData(form);
-    await api("/api/page-content", {
-      method: "PUT",
-      body: JSON.stringify({
-        home: { heroTitle: fd.get("homeHeroTitle"), heroText: fd.get("homeHeroText"), finalCtaTitle: fd.get("homeFinalCtaTitle"), finalCtaText: fd.get("homeFinalCtaText") },
-        about: { headline: fd.get("aboutHeadline"), intro: fd.get("aboutIntro") },
-        pricing: { headline: fd.get("pricingHeadline") },
-        contact: { headline: fd.get("contactHeadline") },
-        faq: { headline: fd.get("faqHeadline") },
-        blog: { headline: fd.get("blogHeadline") }
-      })
-    });
-  }, "pageContentMessage");
-
-  bindSimpleSubmit("seoForm", async (form) => {
-    const fd = new FormData(form);
-    await api("/api/seo", {
-      method: "PUT",
-      body: JSON.stringify({
-        defaultTitle: fd.get("defaultTitle"),
-        defaultDescription: fd.get("defaultDescription"),
-        siteUrl: fd.get("siteUrl"),
-        twitterHandle: fd.get("twitterHandle"),
-        pages: JSON.parse(String(fd.get("pagesJson") || "{}"))
-      })
-    });
-  }, "seoMessage");
-
-  bindCollectionForm("serviceForm", "services", (fd) => ({
-    id: fd.get("id"),
-    slug: fd.get("slug"),
-    title: fd.get("title"),
-    price: fd.get("price"),
-    audience: fd.get("audience"),
-    stripeLink: fd.get("stripeLink"),
-    paypalLink: fd.get("paypalLink"),
-    description: fd.get("description"),
-    benefits: splitLines(fd.get("benefits")),
-    deliverables: splitLines(fd.get("deliverables")),
-    useCases: splitLines(fd.get("useCases")),
-    outcomes: splitLines(fd.get("outcomes")),
-    faq: JSON.parse(String(fd.get("faqJson") || "[]")),
-    featured: fd.get("featured") === "on"
-  }), "serviceMessage");
-
-  bindCollectionForm("pricingForm", "pricing-plans", (fd) => ({
-    id: fd.get("id"),
-    name: fd.get("name"),
-    price: fd.get("price"),
-    summary: fd.get("summary"),
-    comparisonLabel: fd.get("comparisonLabel"),
-    stripeLink: fd.get("stripeLink"),
-    paypalLink: fd.get("paypalLink"),
-    features: splitLines(fd.get("features")),
-    highlight: fd.get("highlight") === "on"
-  }), "pricingMessage");
-
-  bindCollectionForm("testimonialForm", "testimonials", (fd) => ({
-    id: fd.get("id"),
-    name: fd.get("name"),
-    role: fd.get("role"),
-    company: fd.get("company"),
-    rating: Number(fd.get("rating") || 5),
-    quote: fd.get("quote"),
-    result: fd.get("result")
-  }), "testimonialMessage");
-
-  bindCollectionForm("caseStudyForm", "case-studies", (fd) => ({
-    id: fd.get("id"),
-    slug: fd.get("slug"),
-    title: fd.get("title"),
-    clientType: fd.get("clientType"),
-    challenge: fd.get("challenge"),
-    solution: fd.get("solution"),
-    results: splitLines(fd.get("results")),
-    ctaLabel: fd.get("ctaLabel"),
-    ctaLink: fd.get("ctaLink")
-  }), "caseStudyMessage");
-
-  bindCollectionForm("faqForm", "faqs", (fd) => ({
-    id: fd.get("id"),
-    category: fd.get("category"),
-    question: fd.get("question"),
-    answer: fd.get("answer")
-  }), "faqMessage");
-
-  bindCollectionForm("blogForm", "blog-posts", (fd) => ({
-    id: fd.get("id"),
-    slug: fd.get("slug"),
-    title: fd.get("title"),
-    category: fd.get("category"),
-    author: fd.get("author"),
-    publishedAt: fd.get("publishedAt"),
-    excerpt: fd.get("excerpt"),
-    tags: splitLines(fd.get("tags")),
-    metaDescription: fd.get("metaDescription"),
-    contentHtml: fd.get("contentHtml")
-  }), "blogMessage");
-
-  bindCollectionForm("mediaForm", "media", (fd) => ({
-    id: fd.get("id"),
-    name: fd.get("name"),
-    url: fd.get("url"),
-    alt: fd.get("alt")
-  }), "mediaMessage");
-
-  bindSimpleSubmit("passwordForm", async (form) => {
-    await api("/api/account/password", {
-      method: "POST",
-      body: JSON.stringify(Object.fromEntries(new FormData(form).entries()))
-    });
-  }, "passwordMessage");
-
-  bindAdminButtons();
-}
-
-function bindSimpleSubmit(formId, handler, messageId) {
-  const form = document.getElementById(formId);
-  const message = document.getElementById(messageId);
-  if (!form || form.dataset.bound === "true") {
-    return;
-  }
-  form.dataset.bound = "true";
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  document.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    const originalText = btn.textContent;
+    btn.textContent = "Sending...";
+    btn.disabled = true;
     try {
-      await handler(form);
-      if (message) message.textContent = "Saved successfully.";
-      await refreshAdmin();
-    } catch (error) {
-      if (message) message.textContent = error.message;
+      const formData = new FormData(e.target);
+      const payload = Object.fromEntries(formData.entries());
+      await api("/api/forms/contact", { method: "POST", body: JSON.stringify(payload) });
+      e.target.reset();
+      document.getElementById("contactStatus").style.display = "block";
+    } catch (err) {
+      alert("Failed to send message: " + err.message);
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
     }
   });
 }
 
-function bindCollectionForm(formId, collectionSegment, payloadBuilder, messageId) {
-  bindSimpleSubmit(formId, async (form) => {
-    const fd = new FormData(form);
-    const payload = payloadBuilder(fd);
-    const id = String(payload.id || "").trim();
-    delete payload.id;
-    await api(id ? `/api/collections/${collectionSegment}/${id}` : `/api/collections/${collectionSegment}`, {
-      method: id ? "PUT" : "POST",
-      body: JSON.stringify(payload)
-    });
-    form.reset();
-    if (form.elements.id) {
-      form.elements.id.value = "";
-    }
-  }, messageId);
+function renderAboutPage(data) {
+  const aboutInfo = data.pageContent.about;
+  const hero = document.getElementById("aboutHero");
+  if (hero) {
+    hero.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h1 class="text-gradient">${escapeHtml(aboutInfo.headline)}</h1>
+          <p>${escapeHtml(aboutInfo.intro)}</p>
+        </div>
+      </div>
+    `;
+  }
+  const mission = document.getElementById("aboutMission");
+  if (mission) {
+    mission.innerHTML = `
+      <h2>Our Mission</h2>
+      <p>${escapeHtml(aboutInfo.mission)}</p>
+      <h2 style="margin-top: 2rem;">Why AI?</h2>
+      <p>${escapeHtml(aboutInfo.whyAi)}</p>
+      <h2 style="margin-top: 2rem;">Methodology</h2>
+      <ul style="list-style: none; padding: 0;">
+        ${aboutInfo.methodology.map(m => `<li style="margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(m)}</li>`).join("")}
+      </ul>
+    `;
+  }
+  const credibility = document.getElementById("aboutCredibility");
+  if (credibility) {
+    credibility.innerHTML = `
+      ${aboutInfo.credibility.map(c => `
+        <div class="glass-card" style="padding: 1.5rem;">
+          <p style="margin: 0; font-weight: 500;">${escapeHtml(c)}</p>
+        </div>
+      `).join("")}
+    `;
+  }
 }
 
-function fillForm(formId, values) {
-  const form = document.getElementById(formId);
-  if (!form) return;
-  Object.entries(values).forEach(([key, value]) => {
-    if (!form.elements[key]) return;
-    if (form.elements[key].type === "checkbox") {
-      form.elements[key].checked = Boolean(value);
-    } else {
-      form.elements[key].value = value ?? "";
-    }
-  });
+function renderFaqPage(data) {
+  const intro = document.getElementById("faqIntro");
+  if (intro) {
+    intro.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h1 class="text-gradient">${escapeHtml(data.pageContent.faq.headline)}</h1>
+          <p>${escapeHtml(data.pageContent.faq.intro)}</p>
+        </div>
+      </div>
+    `;
+  }
+  const faqList = document.getElementById("faqFullList");
+  if (faqList) {
+    faqList.innerHTML = `
+      <div class="container" style="max-width: 800px;">
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          ${data.faqs.map(faq => `
+            <details style="background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 1rem;">
+              <summary style="font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                ${escapeHtml(faq.question)}
+              </summary>
+              <p style="margin-top: 1rem; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(faq.answer)}</p>
+            </details>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
 }
 
-function bindAdminButtons() {
-  if (document.body.dataset.adminButtonsBound === "true") {
+function renderTestimonialsPage(data) {
+  const grid = document.getElementById("testimonialPageGrid");
+  if (!grid) return;
+  if (!data.testimonials || data.testimonials.length === 0) {
+    grid.innerHTML = '<div style="text-align: center; padding: 4rem; grid-column: 1 / -1; color: var(--text-secondary);">No verified testimonials yet.</div>';
     return;
   }
-  document.body.dataset.adminButtonsBound = "true";
-
-  document.body.addEventListener("click", async (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-
-    if (target.id === "clearServiceForm") fillForm("serviceForm", { id: "", slug: "", title: "", price: "", audience: "", stripeLink: "", paypalLink: "", description: "", benefits: "", deliverables: "", useCases: "", outcomes: "", faqJson: "", featured: false });
-    if (target.id === "clearPricingForm") fillForm("pricingForm", { id: "", name: "", price: "", summary: "", comparisonLabel: "", stripeLink: "", paypalLink: "", features: "", highlight: false });
-    if (target.id === "clearTestimonialForm") fillForm("testimonialForm", { id: "", name: "", role: "", company: "", rating: 5, quote: "", result: "" });
-    if (target.id === "clearCaseStudyForm") fillForm("caseStudyForm", { id: "", slug: "", title: "", clientType: "", challenge: "", solution: "", results: "", ctaLabel: "", ctaLink: "" });
-    if (target.id === "clearFaqForm") fillForm("faqForm", { id: "", category: "", question: "", answer: "" });
-    if (target.id === "clearBlogForm") fillForm("blogForm", { id: "", slug: "", title: "", category: "", author: "", publishedAt: "", excerpt: "", tags: "", metaDescription: "", contentHtml: "" });
-    if (target.id === "clearMediaForm") fillForm("mediaForm", { id: "", name: "", url: "", alt: "" });
-
-    if (target.dataset.editService) {
-      const item = adminState.data.services.find((entry) => entry.id === target.dataset.editService);
-      if (item) fillForm("serviceForm", { ...item, benefits: nlJoin(item.benefits), deliverables: nlJoin(item.deliverables), useCases: nlJoin(item.useCases), outcomes: nlJoin(item.outcomes), faqJson: JSON.stringify(item.faq, null, 2) });
-    }
-    if (target.dataset.deleteService) await deleteCollectionItem("services", target.dataset.deleteService);
-
-    if (target.dataset.editPlan) {
-      const item = adminState.data.pricingPlans.find((entry) => entry.id === target.dataset.editPlan);
-      if (item) fillForm("pricingForm", { ...item, features: nlJoin(item.features) });
-    }
-    if (target.dataset.deletePlan) await deleteCollectionItem("pricing-plans", target.dataset.deletePlan);
-
-    if (target.dataset.editTestimonial) {
-      const item = adminState.data.testimonials.find((entry) => entry.id === target.dataset.editTestimonial);
-      if (item) fillForm("testimonialForm", item);
-    }
-    if (target.dataset.deleteTestimonial) await deleteCollectionItem("testimonials", target.dataset.deleteTestimonial);
-
-    if (target.dataset.editCaseStudy) {
-      const item = adminState.data.caseStudies.find((entry) => entry.id === target.dataset.editCaseStudy);
-      if (item) fillForm("caseStudyForm", { ...item, results: nlJoin(item.results) });
-    }
-    if (target.dataset.deleteCaseStudy) await deleteCollectionItem("case-studies", target.dataset.deleteCaseStudy);
-
-    if (target.dataset.editFaq) {
-      const item = adminState.data.faqs.find((entry) => entry.id === target.dataset.editFaq);
-      if (item) fillForm("faqForm", item);
-    }
-    if (target.dataset.deleteFaq) await deleteCollectionItem("faqs", target.dataset.deleteFaq);
-
-    if (target.dataset.editBlog) {
-      const item = adminState.data.blogPosts.find((entry) => entry.id === target.dataset.editBlog);
-      if (item) fillForm("blogForm", { ...item, tags: nlJoin(item.tags) });
-    }
-    if (target.dataset.deleteBlog) await deleteCollectionItem("blog-posts", target.dataset.deleteBlog);
-
-    if (target.dataset.editMedia) {
-      const item = adminState.data.media.find((entry) => entry.id === target.dataset.editMedia);
-      if (item) fillForm("mediaForm", item);
-    }
-    if (target.dataset.deleteMedia) await deleteCollectionItem("media", target.dataset.deleteMedia);
-
-    if (target.dataset.deleteLead) {
-      await api(`/api/leads/${target.dataset.deleteLead}`, { method: "DELETE" });
-      await refreshAdmin();
-    }
-    if (target.dataset.deleteBooking) {
-      await api(`/api/bookings/${target.dataset.deleteBooking}`, { method: "DELETE" });
-      await refreshAdmin();
-    }
-  });
-
-  document.body.addEventListener("change", async (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLSelectElement)) return;
-    if (target.dataset.updateLead) {
-      await api(`/api/leads/${target.dataset.updateLead}`, { method: "PATCH", body: JSON.stringify({ status: target.value }) });
-      await refreshAdmin();
-    }
-    if (target.dataset.updateBooking) {
-      await api(`/api/bookings/${target.dataset.updateBooking}`, { method: "PATCH", body: JSON.stringify({ status: target.value }) });
-      await refreshAdmin();
-    }
-  });
-
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton && logoutButton.dataset.bound !== "true") {
-    logoutButton.dataset.bound = "true";
-    logoutButton.addEventListener("click", async () => {
-      await api("/api/logout", { method: "POST" });
-      showAdmin(false);
-    });
-  }
+  // If there were testimonials, render them here
 }
 
-async function deleteCollectionItem(segment, id) {
-  await api(`/api/collections/${segment}/${id}`, { method: "DELETE" });
-  await refreshAdmin();
-}
-
-async function refreshAdmin() {
-  try {
-    const data = await api("/api/admin-data");
-    showAdmin(true);
-    renderAdminForms(data);
-  } catch {
-    showAdmin(false);
-  }
-}
-
+// ============================================================================
+// BOOTSTRAP
+// ============================================================================
 async function bootPublic() {
-  const publicData = await api("/api/public-data");
-  updateSeo(publicData);
-  renderHeader(publicData.settings);
-  renderFooter(publicData.settings);
+  try {
+    const publicData = await api("/api/public-data");
+    updateSeo(publicData);
+    renderHeader(publicData.settings);
+    renderFooter(publicData.settings);
 
-  switch (document.body.dataset.page) {
-    case "home":
+    const pageType = document.body.dataset.page;
+    if (pageType === "home") {
       renderHome(publicData);
-      break;
-    case "services":
-      renderServicesPage(publicData);
-      break;
-    case "about":
-      renderAboutPage(publicData);
-      break;
-    case "pricing":
-      renderPricingPage(publicData);
-      break;
-    case "case-studies":
-      renderCaseStudiesPage(publicData);
-      break;
-    case "testimonials":
-      renderTestimonialsPage(publicData);
-      break;
-    case "blog":
-      renderBlogPage(publicData);
-      break;
-    case "blog-post":
-      renderBlogPostPage(publicData);
-      break;
-    case "contact":
-      renderContactPage(publicData);
-      break;
-    case "faq":
-      renderFaqPage(publicData);
-      break;
-    case "service-detail":
+    } else if (pageType === "service-detail") {
       renderServiceDetailPage(publicData);
-      break;
-    default:
-      break;
+    } else if (pageType === "services") {
+      renderServicesPage(publicData);
+    } else if (pageType === "pricing") {
+      renderPricingPage(publicData);
+    } else if (pageType === "contact") {
+      renderContactPage(publicData);
+    } else if (pageType === "about") {
+      renderAboutPage(publicData);
+    } else if (pageType === "faq") {
+      renderFaqPage(publicData);
+    } else if (pageType === "testimonials") {
+      renderTestimonialsPage(publicData);
+    }
+    // legal pages rely on static content, so we just let them render header/footer
+  } catch (err) {
+    console.error("Failed to boot public app:", err);
   }
 }
 
-async function bootAdmin() {
-  renderAdminHeader();
-  bindLogin();
-  await refreshAdmin();
-}
-
-async function boot() {
-  const page = document.body.dataset.page;
-  if (page === "admin") {
-    await bootAdmin();
-    return;
-  }
-  await bootPublic();
-}
-
-boot().catch((error) => {
-  console.error(error);
-  const main = document.querySelector("main");
-  if (main) {
-    main.innerHTML = '<section class="section"><div class="glass-card" style="text-align:center;padding:3rem"><h2>Something went wrong</h2><p>Please refresh the page or try again later.</p></div></section>';
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  bootPublic();
 });

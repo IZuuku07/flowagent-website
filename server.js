@@ -4,7 +4,8 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const rootDir = __dirname;
-const storePath = path.join(rootDir, "data", "store.json");
+const publicContentPath = path.join(rootDir, "data", "public-content.json");
+const privateRuntimePath = path.join(rootDir, "data", "private-runtime.json");
 const configPath = path.join(rootDir, "server-config.json");
 
 const mimeTypes = {
@@ -33,30 +34,167 @@ const collectionMap = {
 
 let configCache;
 
+// --- Public settings keys (safe to commit in public-content.json) ---
+const PUBLIC_SETTINGS_KEYS = [
+  "brandName", "tagline", "businessEmail", "whatsapp", "phone",
+  "bookingLink", "currency", "country", "address", "logoPath",
+  "defaultStripeLink", "defaultPaypalLink",
+  "newsletterTitle", "newsletterText", "footerBlurb"
+];
+
+// --- Private settings keys (never committed, gitignored in private-runtime.json) ---
+const PRIVATE_SETTINGS_KEYS = [
+  "adminEmail", "bankName", "accountHolder", "accountNumber",
+  "iban", "swift", "bankInstructions"
+];
+
 async function loadConfig() {
   if (configCache) {
     return configCache;
   }
-  const raw = await fs.readFile(configPath, "utf8");
-  configCache = JSON.parse(raw);
+  let fileConfig = {};
+  try {
+    const raw = await fs.readFile(configPath, "utf8");
+    fileConfig = JSON.parse(raw);
+  } catch {
+    // No config file — fall back entirely to environment variables
+  }
+  configCache = {
+    port: process.env.PORT || fileConfig.port || 3000,
+    adminUsername: process.env.ADMIN_USERNAME || fileConfig.adminUsername || "",
+    adminPasswordHash: process.env.ADMIN_PASSWORD_HASH || fileConfig.adminPasswordHash || "",
+    adminPasswordSalt: process.env.ADMIN_PASSWORD_SALT || fileConfig.adminPasswordSalt || "",
+    passwordIterations: parseInt(process.env.ADMIN_PASSWORD_ITERATIONS || fileConfig.passwordIterations || 120000, 10),
+    sessionSecret: process.env.SESSION_SECRET || fileConfig.sessionSecret || "",
+    stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || fileConfig.stripePublishableKey || "",
+    paypalClientId: process.env.PAYPAL_CLIENT_ID || fileConfig.paypalClientId || "",
+    paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || fileConfig.paypalClientSecret || "",
+    n8nCheckoutWebhookUrl: process.env.N8N_CHECKOUT_WEBHOOK_URL || fileConfig.n8nCheckoutWebhookUrl || "",
+    baseUrl: process.env.BASE_URL || fileConfig.baseUrl || "http://localhost:3000"
+  };
   return configCache;
 }
 
-async function readStore() {
-  const raw = await fs.readFile(storePath, "utf8");
+// --- Data file helpers ---
+
+function createDefaultPrivateRuntime() {
+  return {
+    settings: {
+      adminEmail: "",
+      bankName: "",
+      accountHolder: "",
+      accountNumber: "",
+      iban: "",
+      swift: "",
+      bankInstructions: ""
+    },
+    leads: [],
+    bookings: [],
+    newsletterSubscribers: [],
+    orders: []
+  };
+}
+
+async function readPublicContent() {
+  const raw = await fs.readFile(publicContentPath, "utf8");
   return JSON.parse(raw);
 }
 
-async function writeStore(data) {
-  await fs.writeFile(storePath, JSON.stringify(data, null, 2));
+async function readPrivateRuntime() {
+  try {
+    const raw = await fs.readFile(privateRuntimePath, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    const defaults = createDefaultPrivateRuntime();
+    await fs.writeFile(privateRuntimePath, JSON.stringify(defaults, null, 2));
+    return defaults;
+  }
 }
 
-function sendJson(res, statusCode, payload, extraHeaders = {}) {
+async function readStore() {
+  const pub = await readPublicContent();
+  const priv = await readPrivateRuntime();
+  return {
+    settings: { ...pub.settings, ...priv.settings },
+    pageContent: pub.pageContent,
+    seo: pub.seo,
+    services: pub.services,
+    pricingPlans: pub.pricingPlans,
+    caseStudies: pub.caseStudies,
+    testimonials: pub.testimonials,
+    faqs: pub.faqs,
+    blogPosts: pub.blogPosts,
+    media: pub.media,
+    leads: priv.leads || [],
+    bookings: priv.bookings || [],
+    newsletterSubscribers: priv.newsletterSubscribers || [],
+    orders: priv.orders || []
+  };
+}
+
+function splitSettings(settings) {
+  const pub = {};
+  const priv = {};
+  for (const key of PUBLIC_SETTINGS_KEYS) {
+    pub[key] = settings[key] !== undefined ? settings[key] : "";
+  }
+  for (const key of PRIVATE_SETTINGS_KEYS) {
+    priv[key] = settings[key] !== undefined ? settings[key] : "";
+  }
+  return { pub, priv };
+}
+
+async function writePublicContent(store) {
+  const { pub } = splitSettings(store.settings);
+  const data = {
+    settings: pub,
+    pageContent: store.pageContent,
+    seo: store.seo,
+    services: store.services,
+    pricingPlans: store.pricingPlans,
+    caseStudies: store.caseStudies,
+    testimonials: store.testimonials,
+    faqs: store.faqs,
+    blogPosts: store.blogPosts,
+    media: store.media
+  };
+  await fs.writeFile(publicContentPath, JSON.stringify(data, null, 2));
+}
+
+async function writePrivateRuntime(store) {
+  const { priv } = splitSettings(store.settings);
+  const data = {
+    settings: priv,
+    leads: store.leads || [],
+    bookings: store.bookings || [],
+    newsletterSubscribers: store.newsletterSubscribers || [],
+    orders: store.orders || []
+  };
+  await fs.writeFile(privateRuntimePath, JSON.stringify(data, null, 2));
+}
+
+async function writeStore(data) {
+  await writePublicContent(data);
+  await writePrivateRuntime(data);
+}
+
+async function writePublicOnly(store) {
+  await writePublicContent(store);
+}
+
+async function writePrivateOnly(store) {
+  await writePrivateRuntime(store);
+}
+
+function sendJson(res, statusCode, data, headers = {}) {
   res.writeHead(statusCode, {
-    "Content-Type": "application/json; charset=utf-8",
-    ...extraHeaders
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+    ...headers
   });
-  res.end(JSON.stringify(payload));
+  res.end(JSON.stringify(data));
 }
 
 function sendText(res, statusCode, payload, extraHeaders = {}) {
@@ -185,8 +323,13 @@ function ensureAdmin(req, res, config) {
 }
 
 function sanitizePublicData(store, config) {
+  // Return only public settings — strip private fields
+  const publicSettings = {};
+  for (const key of PUBLIC_SETTINGS_KEYS) {
+    publicSettings[key] = store.settings[key] !== undefined ? store.settings[key] : "";
+  }
   return {
-    settings: store.settings,
+    settings: publicSettings,
     pageContent: store.pageContent,
     seo: store.seo,
     services: store.services,
@@ -199,6 +342,13 @@ function sanitizePublicData(store, config) {
     paymentConfig: {
       stripePublishableKey: config.stripePublishableKey,
       paypalClientId: config.paypalClientId
+    },
+    bankDetails: {
+      bankName: store.settings.bankName || "",
+      accountHolder: store.settings.accountHolder || "",
+      accountNumber: store.settings.accountNumber || "",
+      iban: store.settings.iban || "",
+      swift: store.settings.swift || ""
     }
   };
 }
@@ -236,6 +386,8 @@ function normalizeCollectionItem(collection, body, existingId) {
       faq: normalizeFaqList(body.faq),
       stripeLink: String(body.stripeLink || "").trim(),
       paypalLink: String(body.paypalLink || "").trim(),
+      imageUrl: String(body.imageUrl || "").trim(),
+      imageAlt: String(body.imageAlt || "").trim(),
       featured: Boolean(body.featured)
     };
   }
@@ -378,7 +530,7 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
     const body = await parseJsonBody(req);
     const item = normalizeCollectionItem(collectionKey, body);
     collection.push(item);
-    await writeStore(store);
+    await writePublicOnly(store);
     sendJson(res, 201, { item });
     return true;
   }
@@ -392,14 +544,14 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
 
     const body = await parseJsonBody(req);
     collection[index] = normalizeCollectionItem(collectionKey, body, itemId);
-    await writeStore(store);
+    await writePublicOnly(store);
     sendJson(res, 200, { item: collection[index] });
     return true;
   }
 
   if (req.method === "DELETE" && itemId) {
     store[collectionKey] = collection.filter((item) => item.id !== itemId);
-    await writeStore(store);
+    await writePublicOnly(store);
     sendJson(res, 200, { success: true });
     return true;
   }
@@ -419,6 +571,8 @@ async function serveStatic(res, pathname) {
   if (!path.extname(filePath)) {
     if (pathname.startsWith("/blog/") && pathname !== "/blog") {
       filePath = path.join(rootDir, "blog", "post.html");
+    } else if (pathname.startsWith("/services/") && pathname !== "/services") {
+      filePath = path.join(rootDir, "service-detail.html");
     } else {
     const htmlCandidate = `${filePath}.html`;
     const indexCandidate = path.join(filePath, "index.html");
@@ -564,7 +718,7 @@ async function requestHandler(req, res) {
     const body = await parseJsonBody(req);
     const store = await readStore();
     store.pageContent = normalizePageContent(body, store.pageContent);
-    await writeStore(store);
+    await writePublicOnly(store);
     sendJson(res, 200, { pageContent: store.pageContent });
     return;
   }
@@ -576,7 +730,7 @@ async function requestHandler(req, res) {
     const body = await parseJsonBody(req);
     const store = await readStore();
     store.seo = normalizeSeo(body, store.seo);
-    await writeStore(store);
+    await writePublicOnly(store);
     sendJson(res, 200, { seo: store.seo });
     return;
   }
@@ -602,7 +756,7 @@ async function requestHandler(req, res) {
       preferredContact: String(body.preferredContact || "").trim(),
       message: String(body.message || "").trim()
     });
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 201, { success: true });
     return;
   }
@@ -627,7 +781,7 @@ async function requestHandler(req, res) {
       preferredTime: String(body.preferredTime || "").trim(),
       message: String(body.message || "").trim()
     });
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 201, { success: true });
     return;
   }
@@ -653,7 +807,7 @@ async function requestHandler(req, res) {
       preferredContact: String(body.preferredContact || "").trim(),
       message: String(body.message || "").trim()
     });
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 201, { success: true });
     return;
   }
@@ -670,7 +824,7 @@ async function requestHandler(req, res) {
       email: String(body.email || "").trim(),
       submittedAt: new Date().toISOString()
     });
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 201, { success: true });
     return;
   }
@@ -688,7 +842,7 @@ async function requestHandler(req, res) {
       return;
     }
     store.leads[index].status = String(body.status || "new");
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 200, { lead: store.leads[index] });
     return;
   }
@@ -700,7 +854,7 @@ async function requestHandler(req, res) {
     const leadId = pathname.split("/").pop();
     const store = await readStore();
     store.leads = store.leads.filter((item) => item.id !== leadId);
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 200, { success: true });
     return;
   }
@@ -718,7 +872,7 @@ async function requestHandler(req, res) {
       return;
     }
     store.bookings[index].status = String(body.status || "new");
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 200, { booking: store.bookings[index] });
     return;
   }
@@ -730,7 +884,7 @@ async function requestHandler(req, res) {
     const bookingId = pathname.split("/").pop();
     const store = await readStore();
     store.bookings = store.bookings.filter((item) => item.id !== bookingId);
-    await writeStore(store);
+    await writePrivateOnly(store);
     sendJson(res, 200, { success: true });
     return;
   }
@@ -739,6 +893,215 @@ async function requestHandler(req, res) {
     await updatePassword(req, res, config);
     return;
   }
+
+  // --- CHECKOUT API ROUTES ---
+  if (req.method === "POST" && pathname === "/api/checkout/create-order") {
+    const body = await parseJsonBody(req);
+    const store = await readStore();
+    
+    // Find service or pricing plan
+    const service = store.services.find(s => s.id === body.serviceId) || store.pricingPlans.find(p => p.id === body.serviceId);
+    if (!service) {
+      sendJson(res, 404, { error: "Service not found" });
+      return;
+    }
+
+    const priceMatch = service.price.match(/\d+(\.\d+)?/);
+    const numericPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
+
+    const newOrder = {
+      id: crypto.randomUUID(),
+      serviceId: service.id,
+      serviceName: service.title || service.name,
+      price: numericPrice,
+      currency: "EUR",
+      clientName: body.clientName,
+      clientEmail: body.clientEmail,
+      clientWhatsApp: body.clientWhatsApp,
+      paymentMethod: body.paymentMethod, // 'paypal' or 'bank'
+      status: "pending",
+      paymentStatus: "unpaid",
+      createdAt: new Date().toISOString()
+    };
+
+    store.orders.unshift(newOrder);
+    await writePrivateOnly(store);
+
+    if (body.paymentMethod === "paypal") {
+      // Create PayPal order via REST API if configured
+      if (!config.paypalClientId || !config.paypalClientSecret) {
+        sendJson(res, 500, { error: "PayPal credentials not configured on server" });
+        return;
+      }
+      
+      try {
+        const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": "en_US",
+            "Authorization": "Basic " + Buffer.from(`${config.paypalClientId}:${config.paypalClientSecret}`).toString("base64"),
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: "grant_type=client_credentials"
+        });
+        const tokenData = await tokenRes.json();
+        const accessToken = tokenData.access_token;
+
+        const orderRes = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            intent: "CAPTURE",
+            purchase_units: [{
+              reference_id: newOrder.id,
+              amount: {
+                currency_code: newOrder.currency,
+                value: newOrder.price.toFixed(2)
+              },
+              description: newOrder.serviceName
+            }]
+          })
+        });
+        
+        const orderData = await orderRes.json();
+        
+        if (!orderRes.ok) {
+          throw new Error(orderData.message || "Failed to create PayPal order");
+        }
+
+        // Update local order with paypalOrderId
+        newOrder.paypalOrderId = orderData.id;
+        await writePrivateOnly(store);
+
+        sendJson(res, 200, { orderId: newOrder.id, paypalOrderId: orderData.id });
+      } catch (err) {
+        console.error("PayPal Create Error:", err);
+        sendJson(res, 500, { error: "Failed to initialize PayPal transaction" });
+      }
+    } else {
+      sendJson(res, 200, { orderId: newOrder.id });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/checkout/capture-paypal") {
+    const body = await parseJsonBody(req);
+    const store = await readStore();
+    
+    const orderIndex = store.orders.findIndex(o => o.id === body.orderId && o.paypalOrderId === body.paypalOrderId);
+    if (orderIndex < 0) {
+      sendJson(res, 404, { error: "Order not found" });
+      return;
+    }
+
+    try {
+      const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Basic " + Buffer.from(`${config.paypalClientId}:${config.paypalClientSecret}`).toString("base64"),
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "grant_type=client_credentials"
+      });
+      const tokenData = await tokenRes.json();
+      
+      const captureRes = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${body.paypalOrderId}/capture`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${tokenData.access_token}`
+        }
+      });
+      
+      const captureData = await captureRes.json();
+      
+      if (captureData.status === "COMPLETED") {
+        store.orders[orderIndex].paymentStatus = "paid";
+        store.orders[orderIndex].status = "completed"; // Or 'in_progress' depending on workflow
+        await writePrivateOnly(store);
+        
+        // Trigger n8n Webhook
+        if (config.n8nCheckoutWebhookUrl) {
+          fetch(config.n8nCheckoutWebhookUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(store.orders[orderIndex])
+          }).catch(e => console.error("Webhook trigger failed:", e));
+        }
+
+        sendJson(res, 200, { success: true, order: store.orders[orderIndex] });
+      } else {
+        sendJson(res, 400, { error: "Payment not completed in PayPal" });
+      }
+    } catch (err) {
+      console.error("PayPal Capture Error:", err);
+      sendJson(res, 500, { error: "Failed to capture payment" });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/checkout/bank-transfer") {
+    const body = await parseJsonBody(req);
+    const store = await readStore();
+    
+    const orderIndex = store.orders.findIndex(o => o.id === body.orderId);
+    if (orderIndex < 0) {
+      sendJson(res, 404, { error: "Order not found" });
+      return;
+    }
+
+    store.orders[orderIndex].status = "awaiting_transfer";
+    await writePrivateOnly(store);
+
+    // Trigger n8n Webhook
+    if (config.n8nCheckoutWebhookUrl) {
+      fetch(config.n8nCheckoutWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(store.orders[orderIndex])
+      }).catch(e => console.error("Webhook trigger failed:", e));
+    }
+
+    sendJson(res, 200, { success: true, order: store.orders[orderIndex] });
+    return;
+  }
+  // --- END CHECKOUT ROUTES ---
+
+  // --- ORDER MANAGEMENT API ---
+  if (req.method === "PATCH" && pathname.startsWith("/api/orders/")) {
+    if (!ensureAdmin(req, res, config)) return;
+    
+    const orderId = pathname.split("/").pop();
+    const body = await parseJsonBody(req);
+    const store = await readStore();
+    
+    const index = store.orders.findIndex(o => o.id === orderId);
+    if (index < 0) {
+      sendJson(res, 404, { error: "Order not found" });
+      return;
+    }
+
+    if (body.action === "mark_paid") {
+      store.orders[index].paymentStatus = "paid";
+      if (store.orders[index].status === "awaiting_transfer" || store.orders[index].status === "pending") {
+        store.orders[index].status = "in_progress";
+      }
+    } else if (body.action === "mark_completed") {
+      store.orders[index].status = "completed";
+    } else if (body.action === "cancel") {
+      store.orders[index].status = "cancelled";
+    }
+
+    await writePrivateOnly(store);
+    sendJson(res, 200, { success: true, order: store.orders[index] });
+    return;
+  }
+  // --- END ORDER MANAGEMENT ---
 
   if (pathname.startsWith("/api/collections/")) {
     const parts = pathname.replace("/api/collections/", "").split("/").filter(Boolean);

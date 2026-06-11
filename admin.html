@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="/flowagent-logo.png">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin-styles.css">
 </head>
 <body data-page="admin">
   <div class="page-shell">
@@ -32,6 +32,21 @@
     </section>
 
     <main id="adminApp" class="hidden">
+      <nav class="admin-nav">
+        <a href="#" class="admin-nav-link active" data-target="dashboardTab">Dashboard</a>
+        <a href="#" class="admin-nav-link" data-target="ordersTab">Orders</a>
+        <a href="#" class="admin-nav-link" data-target="leadsTab">Leads & Bookings</a>
+        <a href="#" class="admin-nav-link" data-target="servicesTab">Services</a>
+        <a href="#" class="admin-nav-link" data-target="pricingTab">Pricing Plans</a>
+        <a href="#" class="admin-nav-link" data-target="blogTab">Blog Posts</a>
+        <a href="#" class="admin-nav-link" data-target="caseStudiesTab">Case Studies</a>
+        <a href="#" class="admin-nav-link" data-target="testimonialsTab">Testimonials</a>
+        <a href="#" class="admin-nav-link" data-target="faqsTab">FAQs</a>
+        <a href="#" class="admin-nav-link" data-target="pageContentTab">Page Content</a>
+        <a href="#" class="admin-nav-link" data-target="seoTab">SEO Settings</a>
+        <a href="#" class="admin-nav-link" data-target="settingsTab">Global Settings</a>
+        <a href="#" class="admin-nav-link" data-target="accountTab">Account</a>
+      </nav>
       <section class="section dashboard-intro">
         <div class="section-heading">
           <p class="eyebrow">Overview</p>
@@ -140,6 +155,6 @@
       </section>
     </main>
   </div>
-  <script src="/script.js"></script>
+  <script src="/admin-script.js"></script>
 </body>
 </html>
