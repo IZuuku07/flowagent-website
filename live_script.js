@@ -284,24 +284,7 @@ function renderHome(data) {
     `;
   }
 
-    // 6. Workflow Demo
-    const demo = document.getElementById("workflowDemo");
-    if (demo) {
-      demo.innerHTML = `
-        <div class="container">
-          <div class="section-header animate-fade-up">
-            <h2 class="text-gradient">Workflow Demo</h2>
-            <p>See our automated systems in action.</p>
-          </div>
-          <div style="background: var(--surface-soft); padding: 4rem 2rem; border-radius: 24px; border: 1px dashed var(--line); text-align: center;" class="animate-fade-up delay-100">
-            <p style="color: var(--text-secondary); font-size: 1.25rem;">Interactive demo coming soon.</p>
-            <a href="/contact" class="btn btn-secondary" style="margin-top: 1.5rem;">Request a live demo</a>
-          </div>
-        </div>
-      `;
-    }
-
-    // 7. Case Study
+  // 7. Case Study
   const caseStudySec = document.getElementById("caseStudySection");
   if (caseStudySec && caseStudies && caseStudies.length > 0) {
     const cs = caseStudies[0];
@@ -549,27 +532,6 @@ function renderServicesPage(data) {
 }
 
 function renderPricingPage(data) {
-  const intro = document.getElementById("pricingIntro");
-  if (intro) {
-    intro.innerHTML = `
-      <div class="container">
-        <div class="section-header animate-fade-up">
-          <h1 class="text-gradient">Simple, Transparent Pricing</h1>
-          <p>Choose the automation system that fits your brand.</p>
-        </div>
-      </div>
-    `;
-  }
-
-  const compTable = document.getElementById("pricingComparisonTable");
-  if (compTable) {
-    compTable.innerHTML = `
-      <div style="padding: 2rem; text-align: center;" class="animate-fade-up delay-100">
-        <p>Full comparison matrix available during consultation to match your exact business needs.</p>
-      </div>
-    `;
-  }
-
   const container = document.getElementById("pricingFullGrid") || document.getElementById("pricingSection");
   if (!container) return;
   if (!data.pricingPlans || data.pricingPlans.length === 0) {
@@ -702,18 +664,6 @@ function renderAboutPage(data) {
       <p>${escapeHtml(aboutInfo.mission)}</p>
       <h2 style="margin-top: 2rem;">Why AI?</h2>
       <p>${escapeHtml(aboutInfo.whyAi)}</p>
-    `;
-  }
-  const methodology = document.getElementById("aboutMethodology");
-  if (methodology) {
-    methodology.innerHTML = `
-      <h2>Methodology</h2>
-      <ul style="list-style: none; padding: 0;">
-        ${aboutInfo.methodology.map(m => `<li style="margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(m)}</li>`).join("")}
-      </ul>
-    `;
-  } else if (mission) {
-    mission.innerHTML += `
       <h2 style="margin-top: 2rem;">Methodology</h2>
       <ul style="list-style: none; padding: 0;">
         ${aboutInfo.methodology.map(m => `<li style="margin-bottom: 0.5rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px; display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(m)}</li>`).join("")}
@@ -876,59 +826,9 @@ async function bootPublic() {
     }
   } catch (err) {
     console.error("Failed to boot public app:", err);
-  } finally {
-    if (typeof setupAnimations === 'function') setupAnimations();
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const contactForm = document.getElementById("contactForm");
-  if (contactForm && !contactForm.innerHTML.trim()) {
-    contactForm.innerHTML = `
-      <div style="max-width: 500px; margin: 0 auto; width: 100%;">
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Name</label>
-          <input type="text" name="name" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
-        </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Email</label>
-          <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
-        </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Message</label>
-          <textarea name="message" required rows="5" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
-        <div id="contactStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
-          Message sent successfully! We will reach out soon.
-        </div>
-      </div>
-    `;
-  }
-
-  const bookingForm = document.getElementById("bookingForm");
-  if (bookingForm && !bookingForm.innerHTML.trim()) {
-    bookingForm.innerHTML = `
-      <div style="max-width: 500px; margin: 0 auto; width: 100%;">
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Name</label>
-          <input type="text" name="name" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
-        </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Email</label>
-          <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
-        </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Company</label>
-          <input type="text" name="company" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Request Booking</button>
-        <div id="bookingStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
-          Booking requested successfully! We will reach out soon.
-        </div>
-      </div>
-    `;
-  }
-
   bootPublic();
 });
