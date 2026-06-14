@@ -843,10 +843,6 @@ async function bootPublic() {
     renderFooter(publicData.settings);
 
     const pageType = document.body.dataset.page;
-    
-    console.log("🛠️ [DEBUG] Public Data Loaded:", Object.keys(publicData));
-    
-    
 
     if (pageType === "home") {
       renderHome(publicData);
