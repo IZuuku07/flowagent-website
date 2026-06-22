@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout | FlowAgent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .checkout-container {
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 0 20px;
+    }
+    .checkout-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .checkout-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .order-summary {
+      background: var(--surface-soft);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      border: 1px solid var(--line);
+    }
+    .order-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .order-summary-row.total {
+      font-weight: 700;
+      font-size: 1.25rem;
+      border-top: 1px dashed var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+      margin-bottom: 0;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .payment-method-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .payment-method {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .payment-method:hover {
+      background: var(--surface-soft);
+    }
+    .payment-method.active {
+      border-color: var(--accent);
+      background: rgba(142, 68, 173, 0.1);
+    }
+    .payment-method input {
+      display: none;
+    }
+    .cih-details {
+      display: none;
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+    .cih-details h4 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--accent-light);
+    }
+    .cih-row {
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    .cih-row strong {
+      color: var(--text);
+    }
+    .paypal-container {
+      display: none;
+      margin-top: 24px;
+    }
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(46, 204, 113, 0.1);
+      color: #2ecc71;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container header-inner" style="justify-content: center;">
+      <a class="brand" href="/">
+        <h2 class="brand-text">FlowAgent Secure Checkout</h2>
+      </a>
+    </div>
+  </header>
+
+  <main class="checkout-container">
+    <div class="checkout-card" id="checkoutCard">
+      <div class="checkout-header">
+        <h2>Complete Your Order</h2>
+        <p class="text-secondary">Secure payment and instant setup.</p>
+      </div>
+
+      <div class="order-summary" id="orderSummary">
+        <div style="text-align: center; color: var(--text-secondary);">Loading order details...</div>
+      </div>
+
+      <form id="checkoutForm">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="clientName" required placeholder="John Doe">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="clientEmail" required placeholder="john@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp Number (Optional)</label>
+          <input type="text" class="form-input" id="clientWhatsApp" placeholder="+1234567890">
+        </div>
+
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Select Payment Method</h3>
+        <div class="payment-method-selector">
+          <label class="payment-method active" id="methodPaypalLabel">
+            <input type="radio" name="paymentMethod" value="paypal" checked>
+            <strong>PayPal</strong>
+          </label>
+          <label class="payment-method" id="methodBankLabel">
+            <input type="radio" name="paymentMethod" value="bank">
+            <strong>Bank Transfer</strong>
+          </label>
+        </div>
+
+        <div id="paypalContainer" class="paypal-container" style="display: block;">
+          <div id="paypal-button-container"></div>
+        </div>
+
+        <div id="bankContainer" style="display: none;">
+          <div class="cih-details" id="cihDetails" style="display: block;">
+            <h4>CIH Bank Details</h4>
+            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 16px;">Please transfer the exact amount to the following account. Your order will be processed once payment is confirmed.</p>
+            <div class="cih-row">Account Holder: <strong id="cihName">-</strong></div>
+            <div class="cih-row">RIB: <strong id="cihRib">-</strong></div>
+            <div class="cih-row">IBAN: <strong id="cihIban">-</strong></div>
+            <div class="cih-row">SWIFT: <strong id="cihSwift">-</strong></div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;" id="bankSubmitBtn">Confirm Order & View Instructions</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="checkout-card success-state" id="successCard">
+      <div class="success-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h2 style="margin-bottom: 16px;" id="successTitle">Payment Successful!</h2>
+      <p class="text-secondary" style="margin-bottom: 32px;" id="successMessage">Your order has been received and our team will contact you shortly to begin setup.</p>
+      <a href="/" class="btn btn-secondary">Return to Homepage</a>
+    </div>
+
+  </main>
+
+  <script src="checkout.js"></script>
+</body>
+</html>

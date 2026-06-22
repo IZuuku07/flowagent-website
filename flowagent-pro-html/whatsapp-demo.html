@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp AI Chatbot Demo | FlowAgent</title>
+  <meta name="description" content="See how an AI WhatsApp chatbot handles customer support, order tracking, and sales for your e-commerce store. Try the live demo.">
+  <meta property="og:title" content="WhatsApp AI Chatbot Demo | FlowAgent">
+  <meta property="og:description" content="See how an AI WhatsApp chatbot handles customer support, order tracking, and sales for your e-commerce store.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://flowagent.best/whatsapp-demo">
+  <meta property="og:image" content="/flowagent-logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://flowagent.best/whatsapp-demo">
+  <link rel="icon" type="image/png" href="/flowagent-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/whatsapp-demo.css">
+</head>
+<body data-page="whatsapp-demo">
+
+  <header class="site-header" id="siteHeader"></header>
+
+  <main>
+    <!-- ========== HERO ========== -->
+    <section class="demo-hero" id="demoHero">
+      <div class="hero-glow"></div>
+      <div class="demo-container">
+        <div class="demo-hero-content animate-on-scroll">
+          <span class="section-badge">🤖 Live Demo</span>
+          <h1>See How Your Store Could Handle <span class="text-gradient">10,000 Messages a Day</span></h1>
+          <p class="hero-subtitle">Your customers get instant answers. You get more sales, fewer tickets, and zero burnout. Try the AI chatbot below — it works exactly like this on WhatsApp.</p>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-number">< 1 min</span>
+              <span class="stat-label">Response Time</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">24/7</span>
+              <span class="stat-label">Availability</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">65%</span>
+              <span class="stat-label">Cost Savings</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">95%</span>
+              <span class="stat-label">Resolution Rate</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CHAT DEMO ========== -->
+    <section class="demo-section" id="chatDemoSection">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">Try It Yourself</span>
+          <h2>Pick a Scenario and Chat</h2>
+          <p>Select a customer scenario below, then interact with the AI chatbot exactly as your customers would on WhatsApp.</p>
+        </div>
+
+        <!-- Scenario Selector -->
+        <div class="scenario-selector animate-on-scroll" id="scenarioSelector">
+          <button class="scenario-btn active" data-scenario="orderTracking">
+            <span class="scenario-icon">📦</span>
+            <span class="scenario-label">Order Tracking</span>
+          </button>
+          <button class="scenario-btn" data-scenario="productInquiry">
+            <span class="scenario-icon">🛍️</span>
+            <span class="scenario-label">Product Inquiry</span>
+          </button>
+          <button class="scenario-btn" data-scenario="returnsRefunds">
+            <span class="scenario-icon">🔄</span>
+            <span class="scenario-label">Returns</span>
+          </button>
+          <button class="scenario-btn" data-scenario="recommendations">
+            <span class="scenario-icon">⭐</span>
+            <span class="scenario-label">Recommendations</span>
+          </button>
+          <button class="scenario-btn" data-scenario="shippingFAQ">
+            <span class="scenario-icon">❓</span>
+            <span class="scenario-label">Shipping FAQ</span>
+          </button>
+          <button class="scenario-btn" data-scenario="humanHandoff">
+            <span class="scenario-icon">🤝</span>
+            <span class="scenario-label">Human Handoff</span>
+          </button>
+        </div>
+
+        <!-- Chat Simulator -->
+        <div class="chat-container animate-on-scroll" id="chatContainer">
+          <div class="chat-header">
+            <div class="chat-avatar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div class="chat-header-info">
+              <span class="chat-name">StyleStore AI Assistant</span>
+              <span class="chat-status">● online</span>
+            </div>
+            <div class="chat-header-actions">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chatMessages">
+            <!-- Messages rendered by JS -->
+          </div>
+
+          <div class="quick-replies" id="quickRepliesContainer">
+            <!-- Quick reply buttons rendered by JS -->
+          </div>
+
+          <form class="chat-input-area" id="chatForm" autocomplete="off">
+            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+            <button type="submit" class="send-btn" aria-label="Send message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </form>
+        </div>
+
+        <p class="demo-note animate-on-scroll">💡 This is a simulation. The real bot connects to your Shopify, handles images & voice messages, and learns your product catalog.</p>
+      </div>
+    </section>
+
+    <!-- ========== FEATURES ========== -->
+    <section class="demo-section" id="featuresSection">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">What It Does</span>
+          <h2>More Than Just a Chatbot</h2>
+          <p>Built on real AI (GPT-5), connected to your store, trained on your products. Not a generic template.</p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">💬</div>
+            <h3>Text, Voice & Images</h3>
+            <p>Customers can send text, voice notes, or product photos. The AI understands all of them and responds intelligently.</p>
+          </div>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">🧠</div>
+            <h3>Trained on Your Business</h3>
+            <p>RAG-powered AI that answers using your actual products, policies, and FAQs — not generic responses.</p>
+          </div>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">📊</div>
+            <h3>Auto Lead Capture</h3>
+            <p>Every conversation is logged. Customer names, numbers, and needs go straight to your Google Sheet or CRM.</p>
+          </div>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">🔄</div>
+            <h3>Human Handoff</h3>
+            <p>When the AI detects a complex issue, it smoothly transfers the conversation to your team — no dropped messages.</p>
+          </div>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">🛒</div>
+            <h3>Shopify Connected</h3>
+            <p>Pulls live product data, checks inventory, tracks orders, and processes returns — all from WhatsApp.</p>
+          </div>
+          <div class="feature-card animate-on-scroll">
+            <div class="feature-icon">🌐</div>
+            <h3>Any Language</h3>
+            <p>The bot speaks your customers' language. Arabic, French, English, Spanish — it adapts automatically.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== BEFORE / AFTER ========== -->
+    <section class="demo-section" id="comparisonSection">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">The Difference</span>
+          <h2>Before vs. After FlowAgent</h2>
+          <p>What changes when you automate your WhatsApp customer support.</p>
+        </div>
+
+        <div class="comparison-section animate-on-scroll">
+          <div class="comparison-card before">
+            <h3>❌ Without AI Bot</h3>
+            <ul>
+              <li>
+                <span class="comparison-icon">⏳</span>
+                <span>Avg response time: <strong>2-4 hours</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">💸</span>
+                <span>Support staff cost: <strong>$1,500-3,000/mo</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">🕐</span>
+                <span>Available: <strong>Business hours only</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">📉</span>
+                <span>Missed messages on weekends/nights</span>
+              </li>
+              <li>
+                <span class="comparison-icon">😤</span>
+                <span>Inconsistent tone and answers</span>
+              </li>
+              <li>
+                <span class="comparison-icon">📋</span>
+                <span>Manual lead tracking in notebooks</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comparison-card after">
+            <h3>✅ With FlowAgent Bot</h3>
+            <ul>
+              <li>
+                <span class="comparison-icon">⚡</span>
+                <span>Avg response time: <strong>Under 1 minute</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">💰</span>
+                <span>Cost: <strong>$40/month</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">🌙</span>
+                <span>Available: <strong>24/7, every day</strong></span>
+              </li>
+              <li>
+                <span class="comparison-icon">✅</span>
+                <span>Zero missed messages, ever</span>
+              </li>
+              <li>
+                <span class="comparison-icon">🎯</span>
+                <span>Consistent, on-brand responses</span>
+              </li>
+              <li>
+                <span class="comparison-icon">📊</span>
+                <span>Auto CRM: leads saved to Google Sheets</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== ROI CALCULATOR ========== -->
+    <section class="demo-section" id="roiSection">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">Calculate Your Savings</span>
+          <h2>How Much Could You Save?</h2>
+          <p>Adjust the sliders to see your projected savings with a FlowAgent WhatsApp bot.</p>
+        </div>
+
+        <div class="roi-calculator animate-on-scroll">
+          <div class="roi-input-group">
+            <label>Monthly customer messages <span class="roi-value" id="roiMessagesValue">500</span></label>
+            <input type="range" id="roiMessages" min="100" max="10000" value="500" step="100">
+          </div>
+          <div class="roi-input-group">
+            <label>Current avg response time (minutes) <span class="roi-value" id="roiResponseTimeValue">30 min</span></label>
+            <input type="range" id="roiResponseTime" min="1" max="120" value="30" step="1">
+          </div>
+          <div class="roi-input-group">
+            <label>Monthly support staff cost <span class="roi-value" id="roiStaffCostValue">$2,000</span></label>
+            <input type="range" id="roiStaffCost" min="500" max="10000" value="2000" step="100">
+          </div>
+
+          <div class="roi-results">
+            <div class="roi-result-item">
+              <div class="result-number highlight" id="roiResultSavings">$1,300</div>
+              <div class="result-label">Monthly Savings</div>
+            </div>
+            <div class="roi-result-item">
+              <div class="result-number" id="roiResultResponseTime">&lt; 1 min</div>
+              <div class="result-label">New Response Time</div>
+            </div>
+            <div class="roi-result-item">
+              <div class="result-number" id="roiResultMessages">500</div>
+              <div class="result-label">Messages Handled</div>
+            </div>
+            <div class="roi-result-item">
+              <div class="result-number" id="roiResultCostPerMessage">$0.08</div>
+              <div class="result-label">Cost Per Message</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== WHO IT'S FOR ========== -->
+    <section class="demo-section" id="industriesSection">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">Who It's For</span>
+          <h2>Built for Businesses That Rely on WhatsApp</h2>
+          <p>If your customers message you on WhatsApp, this bot works for you.</p>
+        </div>
+
+        <div class="industries-grid animate-on-scroll">
+          <div class="industry-item">
+            <div class="industry-icon">🛒</div>
+            <div class="industry-name">E-commerce Stores</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🏥</div>
+            <div class="industry-name">Clinics & Dentists</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🏠</div>
+            <div class="industry-name">Real Estate</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🍽️</div>
+            <div class="industry-name">Restaurants</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🚗</div>
+            <div class="industry-name">Car Dealerships</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🎓</div>
+            <div class="industry-name">Training Centers</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">💇</div>
+            <div class="industry-name">Salons & Spas</div>
+          </div>
+          <div class="industry-item">
+            <div class="industry-icon">🏋️</div>
+            <div class="industry-name">Gyms & Fitness</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== HOW IT WORKS ========== -->
+    <section class="demo-section" id="howItWorksDemo">
+      <div class="demo-container">
+        <div class="section-header animate-on-scroll">
+          <span class="section-badge">How It Works</span>
+          <h2>Live in 48 Hours</h2>
+          <p>From first call to fully automated WhatsApp support in under 2 days.</p>
+        </div>
+
+        <div class="steps-row animate-on-scroll">
+          <div class="step-card-mini">
+            <div class="step-num">1</div>
+            <h4>Discovery Call</h4>
+            <p>We learn your business, products, and common customer questions.</p>
+          </div>
+          <div class="step-connector">→</div>
+          <div class="step-card-mini">
+            <div class="step-num">2</div>
+            <h4>Bot Training</h4>
+            <p>We train the AI on your catalog, policies, FAQs, and brand voice.</p>
+          </div>
+          <div class="step-connector">→</div>
+          <div class="step-card-mini">
+            <div class="step-num">3</div>
+            <h4>Connect WhatsApp</h4>
+            <p>We connect to your WhatsApp Business number via API.</p>
+          </div>
+          <div class="step-connector">→</div>
+          <div class="step-card-mini">
+            <div class="step-num">4</div>
+            <h4>Go Live</h4>
+            <p>Your AI assistant starts handling messages 24/7. You monitor from a dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== FINAL CTA ========== -->
+    <section class="demo-cta" id="finalCta">
+      <div class="demo-container">
+        <div class="cta-content animate-on-scroll">
+          <span class="section-badge">Ready?</span>
+          <h2>Stop Losing Customers to <span class="text-gradient">Slow Replies</span></h2>
+          <p>Get your own AI WhatsApp assistant, trained on your business, live in 48 hours. Starting at just $40/month.</p>
+          <div class="cta-buttons">
+            <a href="/contact" class="btn btn-whatsapp btn-lg" id="ctaBookCall">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right:8px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Book a Free Call
+            </a>
+            <a href="#chatDemoSection" class="btn btn-secondary btn-lg">Try Demo Again</a>
+          </div>
+          <p class="cta-note">No contracts · Cancel anytime · Live in 48 hours</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="siteFooter"></footer>
+
+  <script src="/script.js"></script>
+  <script src="/whatsapp-demo.js"></script>
+</body>
+</html>
