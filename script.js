@@ -7,6 +7,22 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+// ============================================================================
+// EMAILJS CONFIGURATION
+// Replace these with your actual EmailJS keys (see setup instructions)
+// ============================================================================
+const EMAILJS_PUBLIC_KEY = "qsob24Hhei5Lo0rAh";
+const EMAILJS_SERVICE_ID = "service_m0n015a";
+const EMAILJS_CONTACT_TEMPLATE_ID = "template_wz3uml7";
+const EMAILJS_BOOKING_TEMPLATE_ID = "template_815ixfj";
+
+function sendEmailJS(templateId, templateParams) {
+  if (typeof emailjs === "undefined" || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
+    return Promise.resolve(null);
+  }
+  return emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams, EMAILJS_PUBLIC_KEY);
+}
+
 function api(path, options = {}) {
   return fetch(path, {
     credentials: "same-origin",
@@ -60,6 +76,7 @@ function renderHeader(settings) {
       <nav class="nav-links">
         <a href="/services">Services</a>
         <a href="/pricing">Pricing</a>
+        <a href="/whatsapp-demo" style="color:#25D366">Try Demo</a>
         <a href="/#caseStudySection">Case Studies</a>
         <a href="/faq">FAQ</a>
       </nav>
@@ -650,9 +667,18 @@ function renderContactPage(data) {
     try {
       const formData = new FormData(e.target);
       const payload = Object.fromEntries(formData.entries());
-      await api("/api/forms/contact", { method: "POST", body: JSON.stringify(payload) });
+      // Save to server (backup)
+      await api("/api/forms/contact", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
+      // Send email via EmailJS
+      await sendEmailJS(EMAILJS_CONTACT_TEMPLATE_ID, {
+        from_name: payload.name || "Website Visitor",
+        from_email: payload.email || "no-email@provided.com",
+        message: payload.message || "No message provided",
+        to_name: "FlowAgent"
+      });
       e.target.reset();
-      document.getElementById("contactStatus").style.display = "block";
+      const status = document.getElementById("contactStatus");
+      if (status) status.style.display = "block";
     } catch (err) {
       alert("Failed to send message: " + err.message);
     } finally {
@@ -670,9 +696,19 @@ function renderContactPage(data) {
     try {
       const formData = new FormData(e.target);
       const payload = Object.fromEntries(formData.entries());
-      await api("/api/forms/booking", { method: "POST", body: JSON.stringify(payload) });
+      // Save to server (backup)
+      await api("/api/forms/booking", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
+      // Send email via EmailJS
+      await sendEmailJS(EMAILJS_BOOKING_TEMPLATE_ID, {
+        from_name: payload.name || "Website Visitor",
+        from_email: payload.email || "no-email@provided.com",
+        company: payload.company || "Not specified",
+        message: "Booking request from " + (payload.name || "unknown") + " at " + (payload.company || "unknown company"),
+        to_name: "FlowAgent"
+      });
       e.target.reset();
-      document.getElementById("bookingStatus").style.display = "block";
+      const status = document.getElementById("bookingStatus");
+      if (status) status.style.display = "block";
     } catch (err) {
       alert("Failed to request booking: " + err.message);
     } finally {
