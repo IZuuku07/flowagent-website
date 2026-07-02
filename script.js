@@ -76,7 +76,6 @@ function renderHeader(settings) {
       <nav class="nav-links">
         <a href="/services">Services</a>
         <a href="/pricing">Pricing</a>
-        <a href="/whatsapp-demo" style="color:#25D366">Try Demo</a>
         <a href="/#caseStudySection">Case Studies</a>
         <a href="/faq">FAQ</a>
       </nav>
