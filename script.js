@@ -8,19 +8,23 @@ function escapeHtml(value) {
 }
 
 // ============================================================================
-// EMAILJS CONFIGURATION
-// Replace these with your actual EmailJS keys (see setup instructions)
+// WEB3FORMS CONFIGURATION
 // ============================================================================
-const EMAILJS_PUBLIC_KEY = "qsob24Hhei5Lo0rAh";
-const EMAILJS_SERVICE_ID = "service_m0n015a";
-const EMAILJS_CONTACT_TEMPLATE_ID = "template_wz3uml7";
-const EMAILJS_BOOKING_TEMPLATE_ID = "template_815ixfj";
+const WEB3FORMS_KEY = "568f9ad8-212f-4c5a-9f19-935af8febe2c";
 
-function sendEmailJS(templateId, templateParams) {
-  if (typeof emailjs === "undefined" || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
-    return Promise.resolve(null);
-  }
-  return emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams, EMAILJS_PUBLIC_KEY);
+function sendWeb3Form(subject, fields) {
+  return fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      access_key: WEB3FORMS_KEY,
+      subject: subject,
+      ...fields
+    })
+  }).then(res => res.json()).then(data => {
+    if (!data.success) throw new Error(data.message || "Email failed");
+    return data;
+  });
 }
 
 function api(path, options = {}) {
@@ -668,12 +672,11 @@ function renderContactPage(data) {
       const payload = Object.fromEntries(formData.entries());
       // Save to server (backup)
       await api("/api/forms/contact", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
-      // Send email via EmailJS
-      await sendEmailJS(EMAILJS_CONTACT_TEMPLATE_ID, {
-        from_name: payload.name || "Website Visitor",
-        from_email: payload.email || "no-email@provided.com",
-        message: payload.message || "No message provided",
-        to_name: "FlowAgent"
+      // Send email via Web3Forms
+      await sendWeb3Form("New Contact Form: " + (payload.name || "Website Visitor"), {
+        name: payload.name || "Website Visitor",
+        email: payload.email || "no-email@provided.com",
+        message: payload.message || "No message provided"
       });
       e.target.reset();
       const status = document.getElementById("contactStatus");
@@ -697,13 +700,12 @@ function renderContactPage(data) {
       const payload = Object.fromEntries(formData.entries());
       // Save to server (backup)
       await api("/api/forms/booking", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
-      // Send email via EmailJS
-      await sendEmailJS(EMAILJS_BOOKING_TEMPLATE_ID, {
-        from_name: payload.name || "Website Visitor",
-        from_email: payload.email || "no-email@provided.com",
+      // Send email via Web3Forms
+      await sendWeb3Form("New Booking Request: " + (payload.name || "Website Visitor"), {
+        name: payload.name || "Website Visitor",
+        email: payload.email || "no-email@provided.com",
         company: payload.company || "Not specified",
-        message: "Booking request from " + (payload.name || "unknown") + " at " + (payload.company || "unknown company"),
-        to_name: "FlowAgent"
+        message: "Booking request from " + (payload.name || "unknown") + " at " + (payload.company || "unknown company")
       });
       e.target.reset();
       const status = document.getElementById("bookingStatus");
