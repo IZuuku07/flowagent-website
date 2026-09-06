@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowAgent Admin</title>
+  <meta name="description" content="FlowAgent admin dashboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/flowagent-logo.png">
+  <link rel="stylesheet" href="/admin-styles.css">
+</head>
+<body data-page="admin">
+  <div class="page-shell">
+    <header class="site-header dashboard-header" id="siteHeader"></header>
+
+    <section class="section auth-shell" id="adminLoginView">
+      <div class="glass-card auth-card">
+        <div class="section-heading auth-heading">
+          <p class="eyebrow">Admin Login</p>
+          <h2>Log in to control FlowAgent</h2>
+          <p>Use the admin username and password configured in <code>server-config.json</code>.</p>
+        </div>
+        <form class="admin-form" id="loginForm">
+          <label>Username<input type="text" name="username" required></label>
+          <label>Password<input type="password" name="password" required></label>
+          <button class="button" type="submit">Login</button>
+          <p class="form-note" id="loginMessage">Default username is <code>admin</code>.</p>
+        </form>
+      </div>
+    </section>
+
+    <main id="adminApp" class="hidden">
+      <nav class="admin-nav">
+        <a href="#" class="admin-nav-link active" data-target="dashboardTab">Dashboard</a>
+        <a href="#" class="admin-nav-link" data-target="ordersTab">Orders</a>
+        <a href="#" class="admin-nav-link" data-target="leadsTab">Leads & Bookings</a>
+        <a href="#" class="admin-nav-link" data-target="servicesTab">Services</a>
+        <a href="#" class="admin-nav-link" data-target="pricingTab">Pricing Plans</a>
+        <a href="#" class="admin-nav-link" data-target="blogTab">Blog Posts</a>
+        <a href="#" class="admin-nav-link" data-target="caseStudiesTab">Case Studies</a>
+        <a href="#" class="admin-nav-link" data-target="testimonialsTab">Testimonials</a>
+        <a href="#" class="admin-nav-link" data-target="faqsTab">FAQs</a>
+        <a href="#" class="admin-nav-link" data-target="pageContentTab">Page Content</a>
+        <a href="#" class="admin-nav-link" data-target="seoTab">SEO Settings</a>
+        <a href="#" class="admin-nav-link" data-target="settingsTab">Global Settings</a>
+        <a href="#" class="admin-nav-link" data-target="accountTab">Account</a>
+      </nav>
+      <section class="section dashboard-intro">
+        <div class="section-heading">
+          <p class="eyebrow">Overview</p>
+          <h2>Run FlowAgent like a real service business</h2>
+          <p>Edit content, review leads, update pricing, manage blog posts, and prepare your offers for payments and deployment.</p>
+        </div>
+        <div class="admin-overview" id="overviewCards"></div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Site Settings</p><h3>Brand, contact, payments</h3></div></div>
+            <form class="admin-form" id="settingsForm"></form>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Page Content</p><h3>Homepage and page copy</h3></div></div>
+            <form class="admin-form" id="pageContentForm"></form>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Services</p><h3>Manage service pages</h3></div></div>
+            <form class="admin-form" id="serviceForm"></form>
+            <div class="list-stack" id="serviceAdminList"></div>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Pricing</p><h3>Packages and offers</h3></div></div>
+            <form class="admin-form" id="pricingForm"></form>
+            <div class="list-stack" id="pricingAdminList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Testimonials</p><h3>Trust signals</h3></div></div>
+            <form class="admin-form" id="testimonialForm"></form>
+            <div class="list-stack" id="testimonialAdminList"></div>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Case Studies</p><h3>Portfolio examples</h3></div></div>
+            <form class="admin-form" id="caseStudyForm"></form>
+            <div class="list-stack" id="caseStudyAdminList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">FAQ</p><h3>Common objections and answers</h3></div></div>
+            <form class="admin-form" id="faqForm"></form>
+            <div class="list-stack" id="faqAdminList"></div>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Blog</p><h3>SEO content system</h3></div></div>
+            <form class="admin-form" id="blogForm"></form>
+            <div class="list-stack" id="blogAdminList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">SEO</p><h3>Titles, descriptions, social metadata</h3></div></div>
+            <form class="admin-form" id="seoForm"></form>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Media / Assets</p><h3>Image and asset references</h3></div></div>
+            <form class="admin-form" id="mediaForm"></form>
+            <div class="list-stack" id="mediaAdminList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Leads</p><h3>Contact and quote requests</h3></div></div>
+            <div class="list-stack" id="leadList"></div>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Bookings</p><h3>Consultation requests</h3></div></div>
+            <div class="list-stack" id="bookingList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="dashboard-grid">
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Newsletter</p><h3>Captured subscribers</h3></div></div>
+            <div class="list-stack" id="newsletterList"></div>
+          </div>
+          <div class="glass-card dashboard-panel">
+            <div class="panel-heading"><div><p class="eyebrow">Account Settings</p><h3>Change admin password</h3></div></div>
+            <form class="admin-form" id="passwordForm"></form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/admin-script.js"></script>
+</body>
+</html>
