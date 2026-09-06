@@ -70,6 +70,7 @@ async function loadConfig() {
     paypalClientId: process.env.PAYPAL_CLIENT_ID || fileConfig.paypalClientId || "",
     paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || fileConfig.paypalClientSecret || "",
     n8nCheckoutWebhookUrl: process.env.N8N_CHECKOUT_WEBHOOK_URL || fileConfig.n8nCheckoutWebhookUrl || "",
+    web3FormsAccessKey: process.env.WEB3FORMS_ACCESS_KEY || process.env.WEB3FORMS_KEY || fileConfig.web3FormsAccessKey || "",
     baseUrl: process.env.BASE_URL || fileConfig.baseUrl || "http://localhost:3000"
   };
   return configCache;
@@ -249,6 +250,36 @@ function addSecurityHeaders(res) {
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+}
+
+async function sendFormNotification(config, subject, fields) {
+  if (!config.web3FormsAccessKey) {
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: config.web3FormsAccessKey,
+        subject,
+        ...fields
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok || !payload.success) {
+      console.warn("Web3Forms notification failed:", payload.message || response.status);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.warn("Web3Forms notification failed:", err.message);
+    return false;
+  }
 }
 
 function escapeXml(str) {
@@ -742,7 +773,7 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    store.leads.unshift({
+    const submission = {
       id: crypto.randomUUID(),
       type: "contact",
       status: "new",
@@ -755,9 +786,20 @@ async function requestHandler(req, res) {
       budget: String(body.budget || "").trim(),
       preferredContact: String(body.preferredContact || "").trim(),
       message: String(body.message || "").trim()
-    });
+    };
+    store.leads.unshift(submission);
     await writePrivateOnly(store);
-    sendJson(res, 201, { success: true });
+    const emailSent = await sendFormNotification(config, "New Contact Form: " + (submission.name || "Website Visitor"), {
+      name: submission.name || "Website Visitor",
+      email: submission.email || "no-email@provided.com",
+      phone: submission.phone,
+      company: submission.company,
+      service: submission.service,
+      budget: submission.budget,
+      preferredContact: submission.preferredContact,
+      message: submission.message || "No message provided"
+    });
+    sendJson(res, 201, { success: true, emailSent });
     return;
   }
 
@@ -768,7 +810,7 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    store.bookings.unshift({
+    const submission = {
       id: crypto.randomUUID(),
       status: "new",
       submittedAt: new Date().toISOString(),
@@ -780,9 +822,20 @@ async function requestHandler(req, res) {
       preferredDate: String(body.preferredDate || "").trim(),
       preferredTime: String(body.preferredTime || "").trim(),
       message: String(body.message || "").trim()
-    });
+    };
+    store.bookings.unshift(submission);
     await writePrivateOnly(store);
-    sendJson(res, 201, { success: true });
+    const emailSent = await sendFormNotification(config, "New Booking Request: " + (submission.name || "Website Visitor"), {
+      name: submission.name || "Website Visitor",
+      email: submission.email || "no-email@provided.com",
+      phone: submission.phone,
+      company: submission.company || "Not specified",
+      service: submission.service,
+      preferredDate: submission.preferredDate,
+      preferredTime: submission.preferredTime,
+      message: submission.message || "Booking request from " + (submission.name || "unknown") + " at " + (submission.company || "unknown company")
+    });
+    sendJson(res, 201, { success: true, emailSent });
     return;
   }
 
@@ -793,7 +846,7 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    store.leads.unshift({
+    const submission = {
       id: crypto.randomUUID(),
       type: "quote",
       status: "new",
@@ -806,9 +859,20 @@ async function requestHandler(req, res) {
       budget: String(body.budget || "").trim(),
       preferredContact: String(body.preferredContact || "").trim(),
       message: String(body.message || "").trim()
-    });
+    };
+    store.leads.unshift(submission);
     await writePrivateOnly(store);
-    sendJson(res, 201, { success: true });
+    const emailSent = await sendFormNotification(config, "New Quote Request: " + (submission.name || "Website Visitor"), {
+      name: submission.name || "Website Visitor",
+      email: submission.email || "no-email@provided.com",
+      phone: submission.phone,
+      company: submission.company,
+      service: submission.service,
+      budget: submission.budget,
+      preferredContact: submission.preferredContact,
+      message: submission.message || "No message provided"
+    });
+    sendJson(res, 201, { success: true, emailSent });
     return;
   }
 
@@ -819,13 +883,18 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    store.newsletterSubscribers.unshift({
+    const submission = {
       id: crypto.randomUUID(),
       email: String(body.email || "").trim(),
       submittedAt: new Date().toISOString()
-    });
+    };
+    store.newsletterSubscribers.unshift(submission);
     await writePrivateOnly(store);
-    sendJson(res, 201, { success: true });
+    const emailSent = await sendFormNotification(config, "New Newsletter Signup", {
+      email: submission.email || "no-email@provided.com",
+      message: "Newsletter signup from " + (submission.email || "unknown email")
+    });
+    sendJson(res, 201, { success: true, emailSent });
     return;
   }
 

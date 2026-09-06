@@ -52,7 +52,7 @@ const scenarios = {
     triggers: ["product", "hoodie", "size", "stock", "browse", "catalog", "buy"],
     steps: [
       {
-        text: "Let me check that for you... 🔍\n\n*Classic Black Hoodie*\n✅ In stock: Size XL\n💰 Price: $49.99\n🏷️ Sale: 20% off today → *$39.99*\n\nWant me to add it to your cart?",
+        text: "Let me check that for you... 🔍\n\n*Classic Black Hoodie*\n✅ In stock: Size XL\n💰 Price: $59.00\n\nWant me to add it to your cart?",
         quickReplies: ["Add to cart", "Show other colors", "Similar items"]
       },
       {

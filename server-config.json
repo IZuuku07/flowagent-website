@@ -9,6 +9,7 @@
   "paypalClientId": "test",
   "baseUrl": "https://flowagent.best",
   "n8nCheckoutWebhookUrl": "",
+  "web3FormsAccessKey": "568f9ad8-212f-4c5a-9f19-935af8febe2c",
   "paypalClientSecret": "",
   "paypalWebhookId": ""
 }

@@ -146,6 +146,12 @@ Where they go:
 - bookings appear in the admin dashboard
 - newsletter emails appear in the admin dashboard
 
+Email notifications:
+
+- contact, booking, quote, and newsletter forms can send email notifications through Web3Forms
+- set `WEB3FORMS_ACCESS_KEY` or `WEB3FORMS_KEY` in your hosting environment, or set `web3FormsAccessKey` in `server-config.json`
+- if the Node form API is unavailable, the browser falls back to the public Web3Forms integration in `script.js`
+
 ## SEO included
 
 - semantic HTML structure
@@ -231,7 +237,6 @@ Still recommended before real production:
 - HTTPS in production
 - stronger secret rotation
 - regular backups of `data/store.json`
-- real email notifications
 - real payment webhook handling
 - database upgrade if you want multi-admin or heavier scale
 

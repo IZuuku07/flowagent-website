@@ -18,7 +18,7 @@
   --accent:         #6C63FF;
   --accent-glow:    rgba(108,99,255,0.25);
   --accent-soft:    rgba(108,99,255,0.12);
-  --success:        #34D399;
+  --success:        #FFD166;
   --danger:         #F87171;
   --warning:        #FBBF24;
   --shadow:         0 24px 64px rgba(0,0,0,0.4);
@@ -112,7 +112,7 @@ img {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   color: var(--text);
   line-height: 1.15;
 }
@@ -179,7 +179,7 @@ code {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   margin-bottom: 16px;
 }
 
@@ -204,7 +204,7 @@ code {
   margin: 0 0 12px;
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -516,7 +516,7 @@ code {
 .card-title {
   margin: 0 0 14px;
   font-family: var(--font-heading);
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .card-tag {
@@ -524,7 +524,7 @@ code {
   color: var(--accent);
   font-size: 0.82rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   font-weight: 800;
 }
 
@@ -546,7 +546,7 @@ code {
   border-radius: var(--radius-pill);
   font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
   background: var(--accent-soft);
@@ -585,7 +585,7 @@ code {
   color: var(--accent);
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   margin-bottom: 24px;
   box-shadow: 0 0 30px rgba(108,99,255,0.15);
   border: 1px solid rgba(108,99,255,0.15);
@@ -823,7 +823,7 @@ code {
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   margin-bottom: 12px;
 }
 
@@ -1200,7 +1200,7 @@ code {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
 }
 
 .pricing-card .plan-name {
@@ -1401,7 +1401,7 @@ details.faq-item[open] summary::after {
   font-size: 0.78rem;
   text-transform: uppercase;
   color: var(--muted);
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   font-weight: 700;
   margin-bottom: 8px;
 }
@@ -1428,7 +1428,7 @@ details.faq-item[open] summary::after {
   font-size: 0.78rem;
   text-transform: uppercase;
   color: var(--muted);
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -2443,7 +2443,7 @@ details.faq-item[open] summary::after {
 .order-title {
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .status-badge {
@@ -2454,7 +2454,7 @@ details.faq-item[open] summary::after {
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -2499,7 +2499,7 @@ details.faq-item[open] summary::after {
 .preview-grid h3 {
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .preview-grid p {

@@ -39,10 +39,33 @@ function api(path, options = {}) {
     const isJson = (response.headers.get("content-type") || "").includes("application/json");
     const payload = isJson ? await response.json() : null;
     if (!response.ok) {
-      throw new Error(payload?.error || `Request failed (${response.status})`);
+      const error = new Error(payload?.error || `Request failed (${response.status})`);
+      error.status = response.status;
+      throw error;
     }
     return payload;
   });
+}
+
+async function submitFormAndNotify(path, subject, payload, emailFields = payload) {
+  let serverResult = null;
+  let serverError = null;
+
+  try {
+    serverResult = await api(path, { method: "POST", body: JSON.stringify(payload) });
+  } catch (err) {
+    serverError = err;
+  }
+
+  if (serverError && serverError.status && ![404, 405, 500, 502, 503, 504].includes(serverError.status)) {
+    throw serverError;
+  }
+
+  if (!serverResult?.emailSent) {
+    await sendWeb3Form(subject, emailFields);
+  }
+
+  return serverResult || { success: true, emailSent: true, fallback: true };
 }
 
 function updateSeo(publicData) {
@@ -61,6 +84,28 @@ function updateSeo(publicData) {
 
 function serviceLink(service) {
   return `/services/${service.slug}`;
+}
+
+function renderServiceMedia(service, className = "service-media") {
+  if (!service.imageUrl) {
+    return `
+      <div class="${className} service-media-empty">
+        Image coming soon
+      </div>
+    `;
+  }
+
+  return `
+    <div class="${className}">
+      <img
+        src="${escapeHtml(service.imageUrl)}"
+        alt="${escapeHtml(service.imageAlt || service.title)}"
+        loading="lazy"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+      >
+      <div class="service-media-error">Image unavailable</div>
+    </div>
+  `;
 }
 
 // ============================================================================
@@ -139,6 +184,9 @@ function renderFooter(settings) {
           <input type="email" name="email" placeholder="Email address" required>
           <button type="submit" class="btn btn-primary btn-sm">Join</button>
         </form>
+        <div id="newsletterStatus" style="margin-top: 8px; font-size: 0.85rem; color: var(--accent-light); display: none;">
+          Thanks, you are on the list.
+        </div>
       </div>
     </div>
     
@@ -150,6 +198,36 @@ function renderFooter(settings) {
       </div>
     </div>
   `;
+}
+
+function setupNewsletterForm() {
+  const newsletterForm = document.getElementById("newsletterForm");
+  if (!newsletterForm || newsletterForm.dataset.bound === "true") return;
+
+  newsletterForm.dataset.bound = "true";
+  newsletterForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector("button");
+    const originalText = btn.textContent;
+    btn.textContent = "Joining...";
+    btn.disabled = true;
+    try {
+      const formData = new FormData(e.target);
+      const payload = Object.fromEntries(formData.entries());
+      await submitFormAndNotify("/api/forms/newsletter", "New Newsletter Signup", payload, {
+        email: payload.email || "no-email@provided.com",
+        message: "Newsletter signup from " + (payload.email || "unknown email")
+      });
+      e.target.reset();
+      const status = document.getElementById("newsletterStatus");
+      if (status) status.style.display = "block";
+    } catch (err) {
+      alert("Failed to join newsletter: " + err.message);
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  });
 }
 
 // ============================================================================
@@ -249,7 +327,7 @@ function renderHome(data) {
           ${activeServices.map((svc, i) => `
             <div class="card service-card animate-fade-up delay-${(i%2+1)*100} ${svc.featured ? 'featured' : ''}">
               <div class="service-header">
-                ${svc.imageUrl ? `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px solid var(--line); position: relative;"><img src="${escapeHtml(svc.imageUrl)}" alt="${escapeHtml(svc.imageAlt || svc.title)}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"> <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem; position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem;">No image available</div>`}
+                ${renderServiceMedia(svc)}
                 <h3>${escapeHtml(svc.title)}</h3>
                 <div class="service-price">${escapeHtml(svc.price)}</div>
               </div>
@@ -455,7 +533,7 @@ function renderServiceDetailPage(data) {
           </div>
         </div>
         <div class="hero-visual animate-fade-up delay-200">
-          ${service.imageUrl ? `<div style="position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 60px rgba(0,0,0,0.2);"><img src="${escapeHtml(service.imageUrl)}" alt="${escapeHtml(service.imageAlt || service.title)}" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div style="display: none; width: 100%; height: 100%; background: var(--surface-soft); align-items: center; justify-content: center; color: var(--text-secondary); position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="width: 100%; aspect-ratio: 4/3; border-radius: 24px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">No image available</div>`}
+          ${renderServiceMedia(service, "service-detail-media")}
         </div>
       </div>
     </section>
@@ -510,6 +588,12 @@ function renderServiceDetailPage(data) {
 // UTILITIES
 // ============================================================================
 function setupAnimations() {
+  const animatedItems = document.querySelectorAll('.animate-fade-up');
+  if (!("IntersectionObserver" in window)) {
+    animatedItems.forEach(el => el.classList.add('visible'));
+    return;
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -519,7 +603,14 @@ function setupAnimations() {
     });
   }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
-  document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+  animatedItems.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      el.classList.add('visible');
+      return;
+    }
+    observer.observe(el);
+  });
 }
 
 
@@ -538,7 +629,7 @@ function renderServicesPage(data) {
   const cardsHtml = activeServices.map((svc, i) => `
     <div class="card service-card animate-fade-up delay-${(i%2+1)*100} ${svc.featured ? 'featured' : ''}">
       <div class="service-header">
-        ${svc.imageUrl ? `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px solid var(--line); position: relative;"><img src="${escapeHtml(svc.imageUrl)}" alt="${escapeHtml(svc.imageAlt || svc.title)}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"> <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem; position: absolute; inset: 0;">Image unavailable</div></div>` : `<div style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; height: 200px; background: var(--surface-soft); border: 1px dashed var(--line); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.875rem;">No image available</div>`}
+        ${renderServiceMedia(svc)}
         <h3>${escapeHtml(svc.title)}</h3>
         <div class="service-price">${escapeHtml(svc.price)}</div>
       </div>
@@ -550,6 +641,7 @@ function renderServicesPage(data) {
       </ul>
       <div class="service-footer">
         <a href="${serviceLink(svc)}" class="btn btn-secondary">View System details</a>
+        <a href="/contact" class="btn btn-primary">Book a Free Call</a>
       </div>
     </div>
   `).join('');
@@ -573,7 +665,7 @@ function renderPricingPage(data) {
   if (intro) {
     intro.innerHTML = `
       <div class="container">
-        <div class="section-header animate-fade-up">
+          <div class="section-header animate-fade-up">
           <h1 class="text-gradient">Simple, Transparent Pricing</h1>
           <p>Choose the automation system that fits your brand.</p>
         </div>
@@ -613,8 +705,8 @@ function renderPricingPage(data) {
 
   if (isOldDesign) {
     container.innerHTML = `
-      <div class="container">
-        <div class="section-header animate-fade-up">
+        <div class="container">
+          <div class="section-header animate-fade-up">
           <h1 class="text-gradient">Simple, Transparent Pricing</h1>
           <p>Choose the automation system that fits your brand.</p>
         </div>
@@ -626,9 +718,36 @@ function renderPricingPage(data) {
 }
 
 function renderContactPage(data) {
-  const contactSec = document.getElementById("contactForm")?.closest('.container') || document.getElementById("contactSection");
-  if (!contactSec) return;
-  const isOldDesign = contactSec.id === "contactSection";
+  const contactInfo = data.pageContent.contact || {};
+  const settings = data.settings || {};
+  const contactIntro = document.getElementById("contactIntro");
+  const contactDetails = document.getElementById("contactDetailsCard");
+  const contactEmail = settings.businessEmail || "jotaroe007@gmail.com";
+  const whatsapp = settings.whatsapp || "+212 710010126";
+  const whatsappDigits = String(whatsapp).replace(/\D/g, "");
+  let contactForm = document.getElementById("contactForm");
+  const contactSec = contactForm?.closest(".container") || document.getElementById("contactSection");
+  const isOldDesign = contactSec?.id === "contactSection";
+
+  if (contactIntro) {
+    contactIntro.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h1 class="text-gradient">${escapeHtml(contactInfo.headline || "Let's talk about your automation")}</h1>
+          <p>${escapeHtml(contactInfo.intro || "Tell us what your brand does manually today.")}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  if (contactDetails) {
+    contactDetails.innerHTML = `
+      <p class="accent-label">Contact</p>
+      <h3>FlowAgent</h3>
+      <p>Email: <a href="mailto:${escapeHtml(contactEmail)}">${escapeHtml(contactEmail)}</a></p>
+      <p>WhatsApp: <a href="https://wa.me/${escapeHtml(whatsappDigits)}">${escapeHtml(whatsapp)}</a></p>
+    `;
+  }
   
   if (isOldDesign) {
     contactSec.innerHTML = `
@@ -653,15 +772,18 @@ function renderContactPage(data) {
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Send Message</button>
           </form>
-          <div id="contactStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
+          <div id="contactStatus" class="form-status">
             Message sent successfully! We will reach out soon.
           </div>
         </div>
       </div>
     `;
+    contactForm = document.getElementById("contactForm");
   }
 
-  document.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+  if (contactForm && contactForm.dataset.bound !== "true") {
+    contactForm.dataset.bound = "true";
+    contactForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector("button");
     const originalText = btn.textContent;
@@ -670,12 +792,13 @@ function renderContactPage(data) {
     try {
       const formData = new FormData(e.target);
       const payload = Object.fromEntries(formData.entries());
-      // Save to server (backup)
-      await api("/api/forms/contact", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
-      // Send email via Web3Forms
-      await sendWeb3Form("New Contact Form: " + (payload.name || "Website Visitor"), {
+      await submitFormAndNotify("/api/forms/contact", "New Contact Form: " + (payload.name || "Website Visitor"), payload, {
         name: payload.name || "Website Visitor",
         email: payload.email || "no-email@provided.com",
+        phone: payload.phone || "",
+        company: payload.company || "",
+        service: payload.service || "",
+        preferredContact: payload.preferredContact || "",
         message: payload.message || "No message provided"
       });
       e.target.reset();
@@ -688,8 +811,12 @@ function renderContactPage(data) {
       btn.disabled = false;
     }
   });
+  }
 
-  document.getElementById("bookingForm")?.addEventListener("submit", async (e) => {
+  const bookingForm = document.getElementById("bookingForm");
+  if (bookingForm && bookingForm.dataset.bound !== "true") {
+    bookingForm.dataset.bound = "true";
+    bookingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector("button");
     const originalText = btn.textContent;
@@ -698,14 +825,15 @@ function renderContactPage(data) {
     try {
       const formData = new FormData(e.target);
       const payload = Object.fromEntries(formData.entries());
-      // Save to server (backup)
-      await api("/api/forms/booking", { method: "POST", body: JSON.stringify(payload) }).catch(() => {});
-      // Send email via Web3Forms
-      await sendWeb3Form("New Booking Request: " + (payload.name || "Website Visitor"), {
+      await submitFormAndNotify("/api/forms/booking", "New Booking Request: " + (payload.name || "Website Visitor"), payload, {
         name: payload.name || "Website Visitor",
         email: payload.email || "no-email@provided.com",
+        phone: payload.phone || "",
         company: payload.company || "Not specified",
-        message: "Booking request from " + (payload.name || "unknown") + " at " + (payload.company || "unknown company")
+        service: payload.service || "",
+        preferredDate: payload.preferredDate || "",
+        preferredTime: payload.preferredTime || "",
+        message: payload.message || "Booking request from " + (payload.name || "unknown") + " at " + (payload.company || "unknown company")
       });
       e.target.reset();
       const status = document.getElementById("bookingStatus");
@@ -717,6 +845,7 @@ function renderContactPage(data) {
       btn.disabled = false;
     }
   });
+  }
 }
 
 function renderAboutPage(data) {
@@ -878,6 +1007,7 @@ async function bootPublic() {
     updateSeo(publicData);
     renderHeader(publicData.settings);
     renderFooter(publicData.settings);
+    setupNewsletterForm();
 
     const pageType = document.body.dataset.page;
 
@@ -918,21 +1048,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const contactForm = document.getElementById("contactForm");
   if (contactForm && !contactForm.innerHTML.trim()) {
     contactForm.innerHTML = `
-      <div style="max-width: 500px; margin: 0 auto; width: 100%;">
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Name</label>
-          <input type="text" name="name" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+      <div class="order-form-shell">
+        <h3>Send a Message</h3>
+        <div class="field-stack">
+          <label>Name</label>
+          <input type="text" name="name" required>
         </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Email</label>
-          <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+        <div class="field-stack">
+          <label>Email</label>
+          <input type="email" name="email" required>
         </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Message</label>
-          <textarea name="message" required rows="5" style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);"></textarea>
+        <div class="field-stack">
+          <label>Message</label>
+          <textarea name="message" required rows="5"></textarea>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
-        <div id="contactStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
+        <div id="contactStatus" class="form-status">
           Message sent successfully! We will reach out soon.
         </div>
       </div>
@@ -942,21 +1073,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const bookingForm = document.getElementById("bookingForm");
   if (bookingForm && !bookingForm.innerHTML.trim()) {
     bookingForm.innerHTML = `
-      <div style="max-width: 500px; margin: 0 auto; width: 100%;">
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Name</label>
-          <input type="text" name="name" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+      <div class="order-form-shell">
+        <div class="field-stack">
+          <label>Name</label>
+          <input type="text" name="name" required>
         </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Email</label>
-          <input type="email" name="email" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+        <div class="field-stack">
+          <label>Email</label>
+          <input type="email" name="email" required>
         </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display:block;margin-bottom:0.5rem;font-size:0.9rem;font-weight:500;">Company</label>
-          <input type="text" name="company" required style="width:100%;padding:0.75rem;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);">
+        <div class="field-stack">
+          <label>Company</label>
+          <input type="text" name="company" required>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Request Booking</button>
-        <div id="bookingStatus" style="margin-top: 1rem; text-align: center; color: var(--primary); display: none; padding: 1rem; background: rgba(59,130,246,0.1); border-radius: 8px;">
+        <div id="bookingStatus" class="form-status">
           Booking requested successfully! We will reach out soon.
         </div>
       </div>

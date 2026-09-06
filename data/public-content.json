@@ -103,10 +103,106 @@
   },
   "services": [
     {
+      "id": "svc-wa-003",
+      "slug": "whatsapp-chat-bot",
+      "title": "WhatsApp AI Sales & Support Automation",
+      "price": "$59/month",
+      "description": "An AI WhatsApp assistant that answers customers instantly, qualifies leads, recommends products, and hands off to you when a human is needed.",
+      "audience": "Ecommerce brands using WhatsApp for customer communication",
+      "benefits": [
+        "Instant replies for customers and leads",
+        "Product recommendations from your offers",
+        "Lead qualification before you reply manually",
+        "FAQ, policy, and delivery question handling",
+        "Human handoff for high-value conversations",
+        "Conversation tracking for follow-up"
+      ],
+      "deliverables": [
+        "Configured WhatsApp AI assistant",
+        "Knowledge base based on your products and policies",
+        "Lead capture and handoff flow",
+        "Testing and launch support"
+      ],
+      "useCases": [
+        "Customer support",
+        "Sales qualification",
+        "Product discovery"
+      ],
+      "outcomes": [
+        "Faster replies, fewer missed leads, and more consistent customer conversations"
+      ],
+      "faq": [
+        {
+          "question": "Can the AI hand off to a human?",
+          "answer": "Yes. The agent detects when a customer needs human help and routes the conversation to your team."
+        }
+      ],
+      "stripeLink": "",
+      "paypalLink": "https://paypal.me/flowagent",
+      "featured": true,
+      "imageUrl": "/media/whatsapp-automation-card.png",
+      "imageAlt": "WhatsApp automation dashboard for ecommerce sales and support",
+      "legacy": false
+    },
+    {
+      "id": "svc-whatsapp-order-bot",
+      "slug": "whatsapp-order-bot",
+      "title": "WhatsApp Order Confirmation Automation",
+      "price": "$59/month",
+      "description": "Automatic WhatsApp confirmations and status updates that make customers feel informed without manual messages from your team.",
+      "audience": "Ecommerce stores, restaurants, local businesses, and service providers who handle orders and want instant WhatsApp-based customer communication.",
+      "benefits": [
+        "Instant order confirmation messages",
+        "Shipping and delivery update flow",
+        "Lower support load from order questions",
+        "Professional communication after purchase",
+        "Works with ecommerce stores and local order systems"
+      ],
+      "deliverables": [
+        "WhatsApp Business API bot setup and configuration",
+        "Automated order confirmation message templates",
+        "Order status update flow (confirmed, shipped, delivered)",
+        "Integration with your order system or store platform",
+        "Testing and launch support"
+      ],
+      "useCases": [
+        "Ecommerce stores sending instant order confirmations to buyers",
+        "Restaurants confirming delivery and pickup orders via WhatsApp",
+        "Service businesses confirming bookings and appointments",
+        "Any business that wants to reduce manual order communication"
+      ],
+      "outcomes": [
+        "Zero manual order confirmation messages needed",
+        "Faster customer communication and fewer support tickets",
+        "Higher customer satisfaction from instant updates",
+        "Professional automated messaging that represents your brand"
+      ],
+      "faq": [
+        {
+          "question": "Do I need a WhatsApp Business account?",
+          "answer": "Yes, we'll help you set up or connect your WhatsApp Business account to the bot. If you don't have one yet, we'll guide you through the process."
+        },
+        {
+          "question": "Can the bot handle custom messages?",
+          "answer": "Yes. We configure message templates based on your brand voice and order flow. You can customize confirmation text, status updates, and follow-up messages."
+        },
+        {
+          "question": "What order platforms does this integrate with?",
+          "answer": "We can integrate with Shopify, WooCommerce, custom order systems, Google Sheets, and more. We'll map the integration based on your setup."
+        }
+      ],
+      "stripeLink": "",
+      "paypalLink": "https://paypal.me/flowagent",
+      "featured": true,
+      "legacy": false,
+      "imageUrl": "/media/whatsapp-automation-card.png",
+      "imageAlt": "WhatsApp order confirmation automation for ecommerce"
+    },
+    {
       "id": "svc-seo-001",
       "slug": "shopify-seo-blog-automation",
       "title": "Shopify SEO Blog Automation",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "One product-focused SEO article researched, created, and published to your Shopify blog every day.",
       "audience": "Shopify and ecommerce store owners",
       "benefits": [
@@ -141,15 +237,16 @@
       ],
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
-      "imageUrl": "/media/seo_workflow.png",
-      "imageAlt": "SEO Workflow Automation",
-      "featured": true
+      "imageUrl": "/media/seo-automation-card.png",
+      "imageAlt": "SEO content automation workflow for ecommerce products",
+      "featured": false,
+      "legacy": false
     },
     {
       "id": "svc-ugc-002",
       "slug": "social-media-automation",
       "title": "Social Media Automation",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "Automated social media content generated and published directly to your brand accounts.",
       "audience": "Ecommerce brands needing daily video content",
       "benefits": [
@@ -180,96 +277,16 @@
       ],
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
-      "featured": true,
-      "imageUrl": "/media/ugc_workflow.png",
-      "imageAlt": "UGC Video Automation"
-    },
-    {
-      "id": "svc-wa-003",
-      "slug": "whatsapp-chat-bot",
-      "title": "WhatsApp Chat Bot",
-      "price": "$99/month",
-      "description": "An AI assistant trained on your business, products, policies, and frequently asked questions.",
-      "audience": "Ecommerce brands using WhatsApp for customer communication",
-      "benefits": [
-        "Instant customer replies",
-        "Lead qualification",
-        "Product recommendations",
-        "FAQ handling",
-        "Human handoff",
-        "Conversation tracking"
-      ],
-      "deliverables": [
-        "Trained WhatsApp AI agent",
-        "Conversation dashboard",
-        "Handoff rules"
-      ],
-      "useCases": [
-        "Customer support",
-        "Sales qualification",
-        "Product discovery"
-      ],
-      "outcomes": [
-        "24/7 automated customer conversations"
-      ],
-      "faq": [
-        {
-          "question": "Can the AI hand off to a human?",
-          "answer": "Yes. The agent detects when a customer needs human help and routes the conversation to your team."
-        }
-      ],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "imageUrl": "/media/wa_workflow.png",
-      "imageAlt": "WhatsApp AI Sales Agent"
-    },
-    {
-      "id": "svc-custom-004",
-      "slug": "custom-n8n-automation",
-      "title": "Custom n8n Automation",
-      "price": "$99/month",
-      "description": "Custom n8n workflows connecting your applications, data, team, and AI tools.",
-      "audience": "Ecommerce businesses with repetitive operational tasks",
-      "benefits": [
-        "API integrations",
-        "CRM workflows",
-        "Lead processing",
-        "Data synchronization",
-        "AI agents",
-        "Error monitoring"
-      ],
-      "deliverables": [
-        "Custom n8n workflow",
-        "Documentation",
-        "Testing and deployment"
-      ],
-      "useCases": [
-        "CRM automation",
-        "Inventory sync",
-        "Order processing",
-        "Reporting"
-      ],
-      "outcomes": [
-        "Automated operations tailored to your business"
-      ],
-      "faq": [
-        {
-          "question": "Do you offer custom n8n workflows?",
-          "answer": "Yes. We build custom automation workflows for any business process that can be connected via API."
-        }
-      ],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "featured": false,
-      "imageUrl": "/media/n8n_workflow.png",
-      "imageAlt": "Custom n8n Automation"
+      "imageUrl": "/media/social-video-automation-card.png",
+      "imageAlt": "Social video automation and publishing dashboard",
+      "legacy": false
     },
     {
       "id": "svc-ai-video",
       "slug": "ai-video",
       "title": "AI Video Generation & Social Media Auto-Posting",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "Get professional AI-generated videos created and automatically posted to your social media channels. We handle the full pipeline — from script generation and AI video rendering to scheduling and auto-publishing across your platforms.",
       "audience": "Content creators, ecommerce brands, agencies, and founders who want consistent video content without the production overhead.",
       "benefits": [
@@ -308,228 +325,64 @@
           "answer": "Not necessarily. You can provide a brief, topic, or niche, and we'll generate the scripts and visuals using AI. You can also provide your own scripts if you prefer."
         },
         {
-          "question": "How many videos are included for $49?",
+          "question": "How many videos are included for $59?",
           "answer": "The base package includes the full automation setup and an initial batch of videos. Volume depends on your content plan — contact us to discuss your specific needs."
         }
       ],
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
+      "legacy": false,
+      "imageUrl": "/media/social-video-automation-card.png",
+      "imageAlt": "AI video generation and social media automation"
     },
     {
-      "id": "svc-whatsapp-order-bot",
-      "slug": "whatsapp-order-bot",
-      "title": "WhatsApp AI Order Confirmation Bot",
-      "price": "$99/month",
-      "description": "Automate your order confirmations, updates, and customer communication through WhatsApp with an AI-powered bot. Customers receive instant, professional order updates — no manual messaging required.",
-      "audience": "Ecommerce stores, restaurants, local businesses, and service providers who handle orders and want instant WhatsApp-based customer communication.",
+      "id": "svc-custom-004",
+      "slug": "custom-n8n-automation",
+      "title": "Custom n8n Automation",
+      "price": "$59/month",
+      "description": "Custom n8n workflows connecting your applications, data, team, and AI tools.",
+      "audience": "Ecommerce businesses with repetitive operational tasks",
       "benefits": [
-        "Instant order confirmations sent via WhatsApp automatically",
-        "Professional customer experience with zero manual effort",
-        "Reduces support inquiries about order status",
-        "Works 24/7 — even when your team is offline",
-        "Builds customer trust with fast, reliable communication"
+        "API integrations",
+        "CRM workflows",
+        "Lead processing",
+        "Data synchronization",
+        "AI agents",
+        "Error monitoring"
       ],
       "deliverables": [
-        "WhatsApp Business API bot setup and configuration",
-        "Automated order confirmation message templates",
-        "Order status update flow (confirmed, shipped, delivered)",
-        "Integration with your order system or store platform",
-        "Testing and launch support"
+        "Custom n8n workflow",
+        "Documentation",
+        "Testing and deployment"
       ],
       "useCases": [
-        "Ecommerce stores sending instant order confirmations to buyers",
-        "Restaurants confirming delivery and pickup orders via WhatsApp",
-        "Service businesses confirming bookings and appointments",
-        "Any business that wants to reduce manual order communication"
+        "CRM automation",
+        "Inventory sync",
+        "Order processing",
+        "Reporting"
       ],
       "outcomes": [
-        "Zero manual order confirmation messages needed",
-        "Faster customer communication and fewer support tickets",
-        "Higher customer satisfaction from instant updates",
-        "Professional automated messaging that represents your brand"
+        "Automated operations tailored to your business"
       ],
       "faq": [
         {
-          "question": "Do I need a WhatsApp Business account?",
-          "answer": "Yes, we'll help you set up or connect your WhatsApp Business account to the bot. If you don't have one yet, we'll guide you through the process."
-        },
-        {
-          "question": "Can the bot handle custom messages?",
-          "answer": "Yes. We configure message templates based on your brand voice and order flow. You can customize confirmation text, status updates, and follow-up messages."
-        },
-        {
-          "question": "What order platforms does this integrate with?",
-          "answer": "We can integrate with Shopify, WooCommerce, custom order systems, Google Sheets, and more. We'll map the integration based on your setup."
+          "question": "Do you offer custom n8n workflows?",
+          "answer": "Yes. We build custom automation workflows for any business process that can be connected via API."
         }
       ],
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
-    },
-    {
-      "id": "svc-ai-automation",
-      "slug": "ai-automation",
-      "title": "AI Automation",
-      "price": "$99/month",
-      "description": "We design and build custom AI-powered automation workflows that eliminate repetitive tasks, speed up operations, and free your team to focus on high-value work. From lead routing to data processing, we automate what slows you down.",
-      "audience": "Startups, agencies, ecommerce brands, and growing teams who want to automate manual processes and scale operations without hiring.",
-      "benefits": [
-        "Eliminate hours of repetitive manual work every week",
-        "Custom workflows designed around your actual business processes",
-        "Faster response times to leads, orders, and customer requests",
-        "Scalable systems that grow with your business",
-        "No-code and low-code solutions for easy maintenance"
-      ],
-      "deliverables": [
-        "Custom automation workflow design and architecture",
-        "Implementation using n8n, Make, Zapier, or custom scripts",
-        "Integration with your existing tools (CRM, email, Slack, etc.)",
-        "Testing, documentation, and handover",
-        "Post-launch optimization support"
-      ],
-      "useCases": [
-        "Automated lead capture and CRM routing from web forms",
-        "Invoice generation and payment follow-up workflows",
-        "Customer onboarding email sequences triggered automatically",
-        "Data syncing between tools (Google Sheets, Airtable, databases)"
-      ],
-      "outcomes": [
-        "Significant reduction in manual admin tasks",
-        "Faster and more consistent business operations",
-        "Better data accuracy with fewer human errors",
-        "More time for strategy and growth"
-      ],
-      "faq": [
-        {
-          "question": "What tools do you use for automation?",
-          "answer": "We work with n8n, Make (Integromat), Zapier, and custom Node.js scripts depending on the complexity and your preferences."
-        },
-        {
-          "question": "Can you automate processes I already have?",
-          "answer": "Yes. We audit your current workflows, identify bottlenecks, and build automations that replace or enhance your existing processes."
-        },
-        {
-          "question": "How long does setup take?",
-          "answer": "Most automation projects are delivered within 3-7 days depending on complexity and integrations required."
-        }
-      ],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "featured": false,
-      "legacy": true
-    },
-    {
-      "id": "svc-rag-chatbot",
-      "slug": "rag-chatbot",
-      "title": "RAG Chatbot Solutions",
-      "price": "$99/month",
-      "description": "We build intelligent chatbots powered by Retrieval-Augmented Generation (RAG) that answer questions using your actual business documents, FAQs, and knowledge base — not generic AI guesses.",
-      "audience": "SaaS companies, service businesses, ecommerce stores, and any team that wants to automate customer support with accurate, brand-aligned AI responses.",
-      "benefits": [
-        "Answers grounded in your real documents and data",
-        "Reduces repetitive support load on your team",
-        "Available 24/7 for instant customer assistance",
-        "More accurate than generic chatbot solutions",
-        "Trainable on your specific knowledge base and policies"
-      ],
-      "deliverables": [
-        "RAG chatbot built on your documents and knowledge base",
-        "Embedding and vector search pipeline setup",
-        "Custom response formatting aligned with your brand voice",
-        "Website or WhatsApp integration",
-        "Testing, refinement, and launch support"
-      ],
-      "useCases": [
-        "Customer support bot answering product and policy questions",
-        "Internal knowledge assistant for team onboarding",
-        "Pre-sales bot helping visitors find the right service or product",
-        "FAQ automation for high-traffic websites"
-      ],
-      "outcomes": [
-        "Lower support ticket volume",
-        "Faster first-response times for customer inquiries",
-        "Higher customer satisfaction from accurate answers",
-        "More time for your team to handle complex requests"
-      ],
-      "faq": [
-        {
-          "question": "What is RAG and why is it better?",
-          "answer": "RAG (Retrieval-Augmented Generation) means the chatbot retrieves real information from your documents before generating an answer. This makes responses far more accurate and relevant than generic AI."
-        },
-        {
-          "question": "What documents can I train the chatbot on?",
-          "answer": "PDFs, web pages, Google Docs, Notion pages, FAQ lists, support articles — any text-based knowledge source your business uses."
-        },
-        {
-          "question": "Where can the chatbot be deployed?",
-          "answer": "We can embed it on your website, connect it to WhatsApp, or integrate it with Slack, Discord, or other platforms."
-        }
-      ],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "featured": false,
-      "legacy": true
-    },
-    {
-      "id": "svc-social-media-automation",
-      "slug": "social-media-automation",
-      "title": "Social Media Automation",
-      "price": "$99/month",
-      "description": "We build automated social media workflows that handle content scheduling, cross-platform posting, engagement tracking, and repurposing — so your brand stays visible without the daily grind.",
-      "audience": "Founders, personal brands, agencies, and small businesses who want consistent social media presence without spending hours every day.",
-      "benefits": [
-        "Automated scheduling and posting across all major platforms",
-        "Content repurposing from blogs, podcasts, or long-form to social",
-        "Consistent brand voice and posting cadence",
-        "Analytics and engagement tracking built into the workflow",
-        "Frees up hours previously spent on manual social management"
-      ],
-      "deliverables": [
-        "Social media automation workflow setup",
-        "Cross-platform posting configuration (IG, TikTok, LinkedIn, X, Facebook)",
-        "Content calendar and scheduling system",
-        "Hashtag and caption generation templates",
-        "Performance dashboard setup"
-      ],
-      "useCases": [
-        "Daily posting automation for a personal brand or agency",
-        "Repurposing newsletter or blog content into social posts",
-        "Multi-channel product launch campaigns",
-        "Automated engagement reminders and analytics reports"
-      ],
-      "outcomes": [
-        "Consistent social media presence with minimal effort",
-        "More audience reach and engagement over time",
-        "Reduced time spent on content distribution",
-        "Better data on what content performs best"
-      ],
-      "faq": [
-        {
-          "question": "Which social platforms do you support?",
-          "answer": "Instagram, TikTok, LinkedIn, X (Twitter), Facebook, YouTube, and Pinterest. We configure based on your priority channels."
-        },
-        {
-          "question": "Can you repurpose my existing content?",
-          "answer": "Yes. We can turn blog posts, podcasts, newsletters, and long-form content into short-form social posts automatically."
-        },
-        {
-          "question": "Do I need to create content myself?",
-          "answer": "Not necessarily. We can set up AI content generation as part of the workflow, or you can provide content and we automate the distribution."
-        }
-      ],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "featured": false,
-      "legacy": true
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "Custom AI workflow automation dashboard",
+      "legacy": false
     },
     {
       "id": "svc-lead-generation",
       "slug": "lead-generation",
       "title": "Lead Generation Systems",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "We build automated lead capture, qualification, and follow-up systems that turn website visitors, social traffic, and inbound inquiries into organized sales opportunities — without manual effort.",
       "audience": "Agencies, consultants, B2B service providers, and any business that relies on lead flow for revenue growth.",
       "benefits": [
@@ -575,13 +428,69 @@
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
+      "legacy": false,
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "Lead generation automation dashboard"
+    },
+    {
+      "id": "svc-rag-chatbot",
+      "slug": "rag-chatbot",
+      "title": "RAG Chatbot Solutions",
+      "price": "$59/month",
+      "description": "We build intelligent chatbots powered by Retrieval-Augmented Generation (RAG) that answer questions using your actual business documents, FAQs, and knowledge base — not generic AI guesses.",
+      "audience": "SaaS companies, service businesses, ecommerce stores, and any team that wants to automate customer support with accurate, brand-aligned AI responses.",
+      "benefits": [
+        "Answers grounded in your real documents and data",
+        "Reduces repetitive support load on your team",
+        "Available 24/7 for instant customer assistance",
+        "More accurate than generic chatbot solutions",
+        "Trainable on your specific knowledge base and policies"
+      ],
+      "deliverables": [
+        "RAG chatbot built on your documents and knowledge base",
+        "Embedding and vector search pipeline setup",
+        "Custom response formatting aligned with your brand voice",
+        "Website or WhatsApp integration",
+        "Testing, refinement, and launch support"
+      ],
+      "useCases": [
+        "Customer support bot answering product and policy questions",
+        "Internal knowledge assistant for team onboarding",
+        "Pre-sales bot helping visitors find the right service or product",
+        "FAQ automation for high-traffic websites"
+      ],
+      "outcomes": [
+        "Lower support ticket volume",
+        "Faster first-response times for customer inquiries",
+        "Higher customer satisfaction from accurate answers",
+        "More time for your team to handle complex requests"
+      ],
+      "faq": [
+        {
+          "question": "What is RAG and why is it better?",
+          "answer": "RAG (Retrieval-Augmented Generation) means the chatbot retrieves real information from your documents before generating an answer. This makes responses far more accurate and relevant than generic AI."
+        },
+        {
+          "question": "What documents can I train the chatbot on?",
+          "answer": "PDFs, web pages, Google Docs, Notion pages, FAQ lists, support articles — any text-based knowledge source your business uses."
+        },
+        {
+          "question": "Where can the chatbot be deployed?",
+          "answer": "We can embed it on your website, connect it to WhatsApp, or integrate it with Slack, Discord, or other platforms."
+        }
+      ],
+      "stripeLink": "",
+      "paypalLink": "https://paypal.me/flowagent",
+      "featured": false,
+      "legacy": false,
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "RAG chatbot and knowledge automation interface"
     },
     {
       "id": "svc-custom-ai-agents",
       "slug": "custom-ai-agents",
       "title": "Custom AI Agents",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "We build custom AI agents tailored to your business — from customer-facing assistants to internal operations agents. Each agent is designed around your specific workflows, knowledge, and goals.",
       "audience": "Businesses of any size that want a dedicated AI agent trained on their data, processes, and brand to handle tasks autonomously.",
       "benefits": [
@@ -627,13 +536,15 @@
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
+      "legacy": false,
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "Custom AI agent automation dashboard"
     },
     {
       "id": "svc-client-onboarding",
       "slug": "client-onboarding-automation",
       "title": "Client Onboarding Automation",
-      "price": "$99/month",
+      "price": "$59/month",
       "description": "We automate your entire client onboarding process — from welcome emails and document collection to task creation and team notifications. Give every new client a professional, consistent experience from day one.",
       "audience": "Agencies, consultants, SaaS companies, and service businesses that onboard multiple clients and want to systematize the experience.",
       "benefits": [
@@ -679,56 +590,96 @@
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
+      "legacy": false,
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "Client onboarding automation workflow"
     },
     {
-      "id": "147a343a-5ff8-45c3-850f-59eeba8b9460",
-      "slug": "",
-      "title": "",
-      "price": "$99/month",
-      "description": "",
-      "audience": "",
-      "benefits": [],
-      "deliverables": [],
-      "useCases": [],
-      "outcomes": [],
-      "faq": [],
+      "id": "svc-ai-automation",
+      "slug": "ai-automation",
+      "title": "AI Automation",
+      "price": "$59/month",
+      "description": "We design and build custom AI-powered automation workflows that eliminate repetitive tasks, speed up operations, and free your team to focus on high-value work. From lead routing to data processing, we automate what slows you down.",
+      "audience": "Startups, agencies, ecommerce brands, and growing teams who want to automate manual processes and scale operations without hiring.",
+      "benefits": [
+        "Eliminate hours of repetitive manual work every week",
+        "Custom workflows designed around your actual business processes",
+        "Faster response times to leads, orders, and customer requests",
+        "Scalable systems that grow with your business",
+        "No-code and low-code solutions for easy maintenance"
+      ],
+      "deliverables": [
+        "Custom automation workflow design and architecture",
+        "Implementation using n8n, Make, Zapier, or custom scripts",
+        "Integration with your existing tools (CRM, email, Slack, etc.)",
+        "Testing, documentation, and handover",
+        "Post-launch optimization support"
+      ],
+      "useCases": [
+        "Automated lead capture and CRM routing from web forms",
+        "Invoice generation and payment follow-up workflows",
+        "Customer onboarding email sequences triggered automatically",
+        "Data syncing between tools (Google Sheets, Airtable, databases)"
+      ],
+      "outcomes": [
+        "Significant reduction in manual admin tasks",
+        "Faster and more consistent business operations",
+        "Better data accuracy with fewer human errors",
+        "More time for strategy and growth"
+      ],
+      "faq": [
+        {
+          "question": "What tools do you use for automation?",
+          "answer": "We work with n8n, Make (Integromat), Zapier, and custom Node.js scripts depending on the complexity and your preferences."
+        },
+        {
+          "question": "Can you automate processes I already have?",
+          "answer": "Yes. We audit your current workflows, identify bottlenecks, and build automations that replace or enhance your existing processes."
+        },
+        {
+          "question": "How long does setup take?",
+          "answer": "Most automation projects are delivered within 3-7 days depending on complexity and integrations required."
+        }
+      ],
       "stripeLink": "",
       "paypalLink": "https://paypal.me/flowagent",
       "featured": false,
-      "legacy": true
-    },
-    {
-      "id": "ddbde8ca-4a9e-484d-9e6a-b1ee41524420",
-      "slug": "",
-      "title": "",
-      "price": "$99/month",
-      "description": "",
-      "audience": "",
-      "benefits": [],
-      "deliverables": [],
-      "useCases": [],
-      "outcomes": [],
-      "faq": [],
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "featured": false,
-      "legacy": true
+      "legacy": false,
+      "imageUrl": "/media/custom-ai-automation-card.png",
+      "imageAlt": "AI automation workflow for business operations"
     }
   ],
   "pricingPlans": [
     {
-      "id": "plan-seo-001",
-      "name": "SEO Content Engine",
-      "price": "$99/month",
-      "summary": "30 posts monthly",
+      "id": "plan-whatsapp-001",
+      "name": "WhatsApp Automation",
+      "price": "$59/month",
+      "summary": "Reply faster and capture more leads",
       "features": [
-        "30 SEO articles",
-        "One article daily",
-        "Relevant images",
-        "Product links",
-        "Shopify publishing",
-        "Content tracking"
+        "AI WhatsApp reply flow",
+        "FAQ and product knowledge setup",
+        "Lead qualification questions",
+        "Human handoff rules",
+        "Order update flow option",
+        "Launch support included"
+      ],
+      "comparisonLabel": "WhatsApp",
+      "stripeLink": "",
+      "paypalLink": "https://paypal.me/flowagent",
+      "highlight": true
+    },
+    {
+      "id": "plan-content-002",
+      "name": "Content Automation",
+      "price": "$59/month",
+      "summary": "SEO articles or social video workflows",
+      "features": [
+        "Product-focused content system",
+        "AI scripts, captions, or articles",
+        "Publishing workflow setup",
+        "Tracking spreadsheet",
+        "Approval step available",
+        "Monthly optimization notes"
       ],
       "comparisonLabel": "Content",
       "stripeLink": "",
@@ -736,35 +687,17 @@
       "highlight": false
     },
     {
-      "id": "plan-ugc-002",
-      "name": "Social Media Engine",
-      "price": "$99/month",
-      "summary": "30 videos monthly",
-      "features": [
-        "30 AI UGC videos",
-        "Product scripts",
-        "Hooks and captions",
-        "Vertical video format",
-        "Daily scheduling",
-        "Content tracking"
-      ],
-      "comparisonLabel": "Video",
-      "stripeLink": "",
-      "paypalLink": "https://paypal.me/flowagent",
-      "highlight": true
-    },
-    {
       "id": "plan-custom-003",
       "name": "Custom AI System",
-      "price": "$99/month",
-      "summary": "Built for your operation",
+      "price": "$59/month",
+      "summary": "Automate your exact workflow",
       "features": [
         "Workflow discovery",
-        "Custom n8n automation",
-        "AI integrations",
-        "API connections",
-        "Testing and deployment",
-        "Ongoing support options"
+        "n8n, Make, Zapier, or custom build",
+        "CRM, sheet, email, and API connections",
+        "Testing and documentation",
+        "Error monitoring basics",
+        "Ongoing support option"
       ],
       "comparisonLabel": "Custom",
       "stripeLink": "",

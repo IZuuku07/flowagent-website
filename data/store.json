@@ -101,7 +101,7 @@
       "id": "svc-ai-video",
       "slug": "ai-video",
       "title": "AI Video Generation & Social Media Auto-Posting",
-      "price": "$49",
+      "price": "$59/month",
       "description": "Get professional AI-generated videos created and automatically posted to your social media channels. We handle the full pipeline — from script generation and AI video rendering to scheduling and auto-publishing across your platforms.",
       "audience": "Content creators, ecommerce brands, agencies, and founders who want consistent video content without the production overhead.",
       "benefits": [
@@ -140,7 +140,7 @@
           "answer": "Not necessarily. You can provide a brief, topic, or niche, and we'll generate the scripts and visuals using AI. You can also provide your own scripts if you prefer."
         },
         {
-          "question": "How many videos are included for $49?",
+          "question": "How many videos are included for $59?",
           "answer": "The base package includes the full automation setup and an initial batch of videos. Volume depends on your content plan — contact us to discuss your specific needs."
         }
       ],
@@ -152,7 +152,7 @@
       "id": "svc-whatsapp-order-bot",
       "slug": "whatsapp-order-bot",
       "title": "WhatsApp AI Order Confirmation Bot",
-      "price": "$49",
+      "price": "$59/month",
       "description": "Automate your order confirmations, updates, and customer communication through WhatsApp with an AI-powered bot. Customers receive instant, professional order updates — no manual messaging required.",
       "audience": "Ecommerce stores, restaurants, local businesses, and service providers who handle orders and want instant WhatsApp-based customer communication.",
       "benefits": [
@@ -203,7 +203,7 @@
       "id": "svc-ai-automation",
       "slug": "ai-automation",
       "title": "AI Automation",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We design and build custom AI-powered automation workflows that eliminate repetitive tasks, speed up operations, and free your team to focus on high-value work. From lead routing to data processing, we automate what slows you down.",
       "audience": "Startups, agencies, ecommerce brands, and growing teams who want to automate manual processes and scale operations without hiring.",
       "benefits": [
@@ -254,7 +254,7 @@
       "id": "svc-rag-chatbot",
       "slug": "rag-chatbot",
       "title": "RAG Chatbot Solutions",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We build intelligent chatbots powered by Retrieval-Augmented Generation (RAG) that answer questions using your actual business documents, FAQs, and knowledge base — not generic AI guesses.",
       "audience": "SaaS companies, service businesses, ecommerce stores, and any team that wants to automate customer support with accurate, brand-aligned AI responses.",
       "benefits": [
@@ -305,7 +305,7 @@
       "id": "svc-social-media-automation",
       "slug": "social-media-automation",
       "title": "Social Media Automation",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We build automated social media workflows that handle content scheduling, cross-platform posting, engagement tracking, and repurposing — so your brand stays visible without the daily grind.",
       "audience": "Founders, personal brands, agencies, and small businesses who want consistent social media presence without spending hours every day.",
       "benefits": [
@@ -356,7 +356,7 @@
       "id": "svc-lead-generation",
       "slug": "lead-generation",
       "title": "Lead Generation Systems",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We build automated lead capture, qualification, and follow-up systems that turn website visitors, social traffic, and inbound inquiries into organized sales opportunities — without manual effort.",
       "audience": "Agencies, consultants, B2B service providers, and any business that relies on lead flow for revenue growth.",
       "benefits": [
@@ -407,7 +407,7 @@
       "id": "svc-custom-ai-agents",
       "slug": "custom-ai-agents",
       "title": "Custom AI Agents",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We build custom AI agents tailored to your business — from customer-facing assistants to internal operations agents. Each agent is designed around your specific workflows, knowledge, and goals.",
       "audience": "Businesses of any size that want a dedicated AI agent trained on their data, processes, and brand to handle tasks autonomously.",
       "benefits": [
@@ -458,7 +458,7 @@
       "id": "svc-client-onboarding",
       "slug": "client-onboarding-automation",
       "title": "Client Onboarding Automation",
-      "price": "$49",
+      "price": "$59/month",
       "description": "We automate your entire client onboarding process — from welcome emails and document collection to task creation and team notifications. Give every new client a professional, consistent experience from day one.",
       "audience": "Agencies, consultants, SaaS companies, and service businesses that onboard multiple clients and want to systematize the experience.",
       "benefits": [
@@ -510,7 +510,7 @@
     {
       "id": "plan-starter",
       "name": "Starter",
-      "price": "$49",
+      "price": "$59/month",
       "summary": "Perfect for businesses that want to test a single AI automation or service.",
       "features": [
         "1 service of your choice",
@@ -527,7 +527,7 @@
     {
       "id": "plan-growth",
       "name": "Growth Bundle",
-      "price": "$129",
+      "price": "$59/month",
       "summary": "Combine 3 services for a complete automation stack at a discounted rate.",
       "features": [
         "Choose any 3 services",
