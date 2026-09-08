@@ -79,6 +79,12 @@ async function loadConfig() {
     web3FormsAccessKey: process.env.WEB3FORMS_ACCESS_KEY || process.env.WEB3FORMS_KEY || fileConfig.web3FormsAccessKey || "",
     baseUrl: process.env.BASE_URL || fileConfig.baseUrl || "http://localhost:3000"
   };
+  if (!configCache.adminPasswordHash && process.env.ADMIN_PASSWORD) {
+    if (process.env.ADMIN_PASSWORD.length < 16) throw new Error("ADMIN_PASSWORD must have at least 16 characters");
+    configCache.adminPasswordSalt = crypto.randomBytes(16).toString("hex");
+    configCache.passwordIterations = 120000;
+    configCache.adminPasswordHash = crypto.pbkdf2Sync(process.env.ADMIN_PASSWORD, configCache.adminPasswordSalt, 120000, 64, "sha512").toString("hex");
+  }
   return configCache;
 }
 
@@ -1268,3 +1274,4 @@ function shutdown() {
 }
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+
