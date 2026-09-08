@@ -4,9 +4,14 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const rootDir = __dirname;
-const publicContentPath = path.join(rootDir, "data", "public-content.json");
-const privateRuntimePath = path.join(rootDir, "data", "private-runtime.json");
-const configPath = path.join(rootDir, "server-config.json");
+const seoTools = require("./seo.cjs");
+const storage = require("./storage.cjs");
+const storagePaths = storage.paths(rootDir);
+const documents = require("./document-store.cjs").createDocumentStore({root:rootDir});
+const studio = require('./studio-backend.cjs').createStudio({directory: rootDir, documentStore: documents, verifySession, parseJsonBody, sendJson});
+const publicContentPath = storagePaths.publicContent;
+const privateRuntimePath = storagePaths.privateRuntime;
+const configPath = storagePaths.config;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -38,7 +43,7 @@ let configCache;
 const PUBLIC_SETTINGS_KEYS = [
   "brandName", "tagline", "businessEmail", "whatsapp", "phone",
   "bookingLink", "currency", "country", "address", "logoPath",
-  "defaultStripeLink", "defaultPaypalLink",
+  "defaultStripeLink", "defaultPaypalLink", "paypalEmail",
   "newsletterTitle", "newsletterText", "footerBlurb"
 ];
 
@@ -54,25 +59,32 @@ async function loadConfig() {
   }
   let fileConfig = {};
   try {
-    const raw = await fs.readFile(configPath, "utf8");
-    fileConfig = JSON.parse(raw);
-  } catch {
-    // No config file — fall back entirely to environment variables
+    fileConfig = await documents.read("config") || {};
+  } catch (error) {
+    if(documents.remote) throw error;
+    // Local development may use environment variables when no config file exists.
   }
   configCache = {
     port: process.env.PORT || fileConfig.port || 3000,
     adminUsername: process.env.ADMIN_USERNAME || fileConfig.adminUsername || "",
-    adminPasswordHash: process.env.ADMIN_PASSWORD_HASH || fileConfig.adminPasswordHash || "",
-    adminPasswordSalt: process.env.ADMIN_PASSWORD_SALT || fileConfig.adminPasswordSalt || "",
+    adminPasswordHash: fileConfig.adminPasswordHash || process.env.ADMIN_PASSWORD_HASH || "",
+    adminPasswordSalt: fileConfig.adminPasswordSalt || process.env.ADMIN_PASSWORD_SALT || "",
     passwordIterations: parseInt(process.env.ADMIN_PASSWORD_ITERATIONS || fileConfig.passwordIterations || 120000, 10),
-    sessionSecret: process.env.SESSION_SECRET || fileConfig.sessionSecret || "",
+    sessionSecret: fileConfig.sessionSecret || process.env.SESSION_SECRET || "",
     stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || fileConfig.stripePublishableKey || "",
+    paypalEnvironment: process.env.PAYPAL_ENVIRONMENT === "live" ? "live" : "sandbox",
     paypalClientId: process.env.PAYPAL_CLIENT_ID || fileConfig.paypalClientId || "",
     paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || fileConfig.paypalClientSecret || "",
     n8nCheckoutWebhookUrl: process.env.N8N_CHECKOUT_WEBHOOK_URL || fileConfig.n8nCheckoutWebhookUrl || "",
     web3FormsAccessKey: process.env.WEB3FORMS_ACCESS_KEY || process.env.WEB3FORMS_KEY || fileConfig.web3FormsAccessKey || "",
     baseUrl: process.env.BASE_URL || fileConfig.baseUrl || "http://localhost:3000"
   };
+  if (!configCache.adminPasswordHash && process.env.ADMIN_PASSWORD) {
+    if (process.env.ADMIN_PASSWORD.length < 16) throw new Error("ADMIN_PASSWORD must have at least 16 characters");
+    configCache.adminPasswordSalt = crypto.randomBytes(16).toString("hex");
+    configCache.passwordIterations = 120000;
+    configCache.adminPasswordHash = crypto.pbkdf2Sync(process.env.ADMIN_PASSWORD, configCache.adminPasswordSalt, 120000, 64, "sha512").toString("hex");
+  }
   return configCache;
 }
 
@@ -97,19 +109,17 @@ function createDefaultPrivateRuntime() {
 }
 
 async function readPublicContent() {
-  const raw = await fs.readFile(publicContentPath, "utf8");
-  return JSON.parse(raw);
+  const data = await documents.read("public");
+  if (!data) throw Object.assign(new Error("Website content is not initialized"), {statusCode:503});
+  return data;
 }
 
 async function readPrivateRuntime() {
-  try {
-    const raw = await fs.readFile(privateRuntimePath, "utf8");
-    return JSON.parse(raw);
-  } catch {
-    const defaults = createDefaultPrivateRuntime();
-    await fs.writeFile(privateRuntimePath, JSON.stringify(defaults, null, 2));
-    return defaults;
-  }
+ const stored = await documents.read('private');
+ if(stored!==null)return stored;
+ const defaults=createDefaultPrivateRuntime();
+ await documents.write('private',defaults,{ifAbsent:true});
+ return await documents.read('private');
 }
 
 async function readStore() {
@@ -159,7 +169,7 @@ async function writePublicContent(store) {
     blogPosts: store.blogPosts,
     media: store.media
   };
-  await fs.writeFile(publicContentPath, JSON.stringify(data, null, 2));
+  await documents.write("public",data);
 }
 
 async function writePrivateRuntime(store) {
@@ -171,7 +181,7 @@ async function writePrivateRuntime(store) {
     newsletterSubscribers: store.newsletterSubscribers || [],
     orders: store.orders || []
   };
-  await fs.writeFile(privateRuntimePath, JSON.stringify(data, null, 2));
+  await documents.write("private",data);
 }
 
 async function writeStore(data) {
@@ -299,8 +309,8 @@ function parseCookies(req) {
 }
 
 function createSessionValue(username, secret) {
-  const signature = crypto.createHmac("sha256", secret).update(username).digest("hex");
-  return `${username}.${signature}`;
+  const payload = Buffer.from(JSON.stringify({username,expires:Date.now()+8*60*60*1000})).toString('base64url');
+  return payload+'.'+crypto.createHmac('sha256',secret).update(payload).digest('hex');
 }
 
 function verifyPassword(password, config) {
@@ -325,24 +335,15 @@ function verifyPassword(password, config) {
 }
 
 function verifySession(req, config) {
-  const cookies = parseCookies(req);
-  const session = cookies.flowagent_session;
-  if (!session) {
-    return false;
-  }
-
-  const [username, signature] = session.split(".");
-  if (!username || !signature || username !== config.adminUsername) {
-    return false;
-  }
-
-  const expected = crypto.createHmac("sha256", config.sessionSecret).update(username).digest("hex");
-
-  try {
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
-  } catch {
-    return false;
-  }
+ if(!config.sessionSecret||!config.adminUsername)return false;
+ try {
+  const session=parseCookies(req).flowagent_session||'';
+  const [payload,signature,...extra]=session.split('.');if(!payload||!signature||extra.length)return false;
+  const expected=crypto.createHmac('sha256',config.sessionSecret).update(payload).digest('hex');
+  if(!crypto.timingSafeEqual(Buffer.from(signature),Buffer.from(expected)))return false;
+  const data=JSON.parse(Buffer.from(payload,'base64url').toString());
+  return data.username===config.adminUsername&&Number.isFinite(data.expires)&&data.expires>Date.now();
+ } catch { return false; }
 }
 
 function ensureAdmin(req, res, config) {
@@ -406,6 +407,8 @@ function normalizeCollectionItem(collection, body, existingId) {
     return {
       id: existingId || body.id || crypto.randomUUID(),
       slug: String(body.slug || "").trim(),
+      category: ["Content & Publishing","Sales & Bookings","Customer Support","Business Operations"].includes(body.category) ? body.category : "Business Operations",
+      quoteOnly: Boolean(body.quoteOnly),
       title: String(body.title || "").trim(),
       price: String(body.price || "").trim(),
       description: String(body.description || "").trim(),
@@ -510,6 +513,7 @@ function normalizeSettings(body, previous) {
     address: String(body.address || "").trim(),
     logoPath: String(body.logoPath || "").trim(),
     defaultStripeLink: String(body.defaultStripeLink || "").trim(),
+    paypalEmail: String(body.paypalEmail || previous.paypalEmail || "").trim(),
     defaultPaypalLink: String(body.defaultPaypalLink || "").trim(),
     bankName: String(body.bankName || "").trim(),
     accountHolder: String(body.accountHolder || "").trim(),
@@ -574,7 +578,7 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
     }
 
     const body = await parseJsonBody(req);
-    collection[index] = normalizeCollectionItem(collectionKey, body, itemId);
+    collection[index] = { ...collection[index], ...normalizeCollectionItem(collectionKey, body, itemId) };
     await writePublicOnly(store);
     sendJson(res, 200, { item: collection[index] });
     return true;
@@ -591,10 +595,15 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
 }
 
 async function serveStatic(res, pathname) {
-  let requestedPath = pathname === "/" ? "/index.html" : pathname;
+  let decoded;
+  try { decoded = decodeURIComponent(pathname); } catch { sendText(res, 400, 'Invalid path'); return; }
+  const publicScripts = new Set(['script.js','admin-script.js','checkout.js','whatsapp-demo.js','studio.js']);
+  const ext = path.extname(decoded).toLowerCase();
+  if (decoded.includes('\\') || decoded.split('/').some(p => p.startsWith('.')) || decoded.startsWith('/data/') || decoded.startsWith('/n8n/') || decoded.startsWith('/tests/') || (ext && !['.html','.css','.png','.jpg','.jpeg','.webp','.svg','.ico','.js'].includes(ext)) || (ext === '.js' && !publicScripts.has(decoded.slice(1)))) { sendText(res, 404, 'Not found'); return; }
+  let requestedPath = decoded === "/" ? "/index.html" : decoded;
   let filePath = path.normalize(path.join(rootDir, requestedPath));
 
-  if (!filePath.startsWith(rootDir)) {
+  if (filePath !== rootDir && !filePath.startsWith(rootDir + path.sep)) {
     sendText(res, 403, "Forbidden");
     return;
   }
@@ -623,12 +632,19 @@ async function serveStatic(res, pathname) {
   }
 
   try {
-    const content = await fs.readFile(filePath);
+    let content = await fs.readFile(filePath);
+    if (path.extname(filePath) === ".html") {
+      const result = seoTools.apply(content.toString("utf8"), await readPublicContent(), pathname);
+      if (result.missing) { sendText(res, 404, "Page not found"); return; }
+      content = result.html;
+      if(result.noindex) res.setHeader("X-Robots-Tag", "noindex, follow");
+    }
     res.writeHead(200, {
       "Content-Type": mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream"
     });
     res.end(content);
-  } catch {
+  } catch (error) {
+    if(error.statusCode) throw error;
     sendText(res, 404, "Not found");
   }
 }
@@ -660,10 +676,11 @@ async function updatePassword(req, res, config) {
   const nextConfig = {
     ...config,
     adminPasswordHash: hash,
-    adminPasswordSalt: salt
+    adminPasswordSalt: salt,
+    sessionSecret: crypto.randomBytes(32).toString("hex")
   };
 
-  await fs.writeFile(configPath, JSON.stringify(nextConfig, null, 2));
+  await documents.write("config",nextConfig);
   configCache = nextConfig;
   sendJson(res, 200, { success: true });
 }
@@ -674,6 +691,7 @@ async function requestHandler(req, res) {
   const pathname = url.pathname;
 
   addSecurityHeaders(res);
+  if (await studio.handle(req, res, pathname, config)) return;
 
   const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress;
 
@@ -697,13 +715,14 @@ async function requestHandler(req, res) {
       return;
     }
 
+    if (!config.sessionSecret) { sendJson(res, 503, {error:"Admin session secret is not configured"}); return; }
     const sessionValue = createSessionValue(config.adminUsername, config.sessionSecret);
     sendJson(
       res,
       200,
       { success: true },
       {
-        "Set-Cookie": `flowagent_session=${encodeURIComponent(sessionValue)}; HttpOnly; Path=/; SameSite=Lax${req.headers.host && !req.headers.host.includes("localhost") ? "; Secure" : ""}`
+        "Set-Cookie": `flowagent_session=${encodeURIComponent(sessionValue)}; HttpOnly; Path=/; Max-Age=28800; SameSite=Lax${req.headers.host && !req.headers.host.includes("localhost") ? "; Secure" : ""}`
       }
     );
     return;
@@ -726,7 +745,7 @@ async function requestHandler(req, res) {
       return;
     }
     const store = await readStore();
-    sendJson(res, 200, store);
+    sendJson(res, 200, {...store, storage:documents.status()});
     return;
   }
 
@@ -975,6 +994,7 @@ async function requestHandler(req, res) {
       return;
     }
 
+    if (service.quoteOnly || service.pilotOnly) { sendJson(res, 409, {error: 'This package requires a confirmed quote before checkout.'}); return; }
     const priceMatch = service.price.match(/\d+(\.\d+)?/);
     const numericPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
 
@@ -1004,7 +1024,7 @@ async function requestHandler(req, res) {
       }
       
       try {
-        const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+        const tokenRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v1/oauth2/token`, {
           method: "POST",
           headers: {
             "Accept": "application/json",
@@ -1017,7 +1037,7 @@ async function requestHandler(req, res) {
         const tokenData = await tokenRes.json();
         const accessToken = tokenData.access_token;
 
-        const orderRes = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
+        const orderRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v2/checkout/orders`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1068,7 +1088,7 @@ async function requestHandler(req, res) {
     }
 
     try {
-      const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
+      const tokenRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v1/oauth2/token`, {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -1079,7 +1099,7 @@ async function requestHandler(req, res) {
       });
       const tokenData = await tokenRes.json();
       
-      const captureRes = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${body.paypalOrderId}/capture`, {
+      const captureRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v2/checkout/orders/${encodeURIComponent(body.paypalOrderId)}/capture`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1190,7 +1210,7 @@ async function requestHandler(req, res) {
   }
 
   if (req.method === "GET" && pathname === "/robots.txt") {
-    const robots = `User-agent: *\nAllow: /\nSitemap: ${config.baseUrl}/sitemap.xml\n`;
+    const robots = `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${seoTools.base(await readPublicContent())}/sitemap.xml\n`;
     sendText(res, 200, robots);
     return;
   }
@@ -1208,11 +1228,11 @@ async function requestHandler(req, res) {
       "/contact",
       "/faq"
     ];
-    const servicePages = store.services.map((service) => `/services/${service.slug}`);
+    const servicePages = store.services.filter(s => !s.legacy).map((service) => `/services/${service.slug}`);
     const blogPages = store.blogPosts.map((post) => `/blog/${post.slug}`);
     const urls = staticPages.concat(servicePages, blogPages);
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-      .map((item) => `  <url><loc>${escapeXml(config.baseUrl + item)}</loc></url>`)
+      .map((item) => `  <url><loc>${escapeXml(seoTools.base(store) + item)}</loc></url>`)
       .join("\n")}\n</urlset>`;
     res.writeHead(200, { "Content-Type": "application/xml; charset=utf-8" });
     res.end(xml);
@@ -1222,18 +1242,22 @@ async function requestHandler(req, res) {
   await serveStatic(res, pathname);
 }
 
+let websiteWrites = Promise.resolve();
 const server = http.createServer((req, res) => {
-  requestHandler(req, res).catch((error) => {
+  const mutatesWebsite = ["POST","PUT","PATCH","DELETE"].includes(req.method) && req.url.startsWith("/api/") && !req.url.startsWith("/api/studio/");
+  const pending = mutatesWebsite ? websiteWrites.then(() => requestHandler(req,res)) : requestHandler(req,res);
+  if(mutatesWebsite) websiteWrites = pending.catch(() => {});
+  pending.catch((error) => {
     console.error(error);
     const code = error.statusCode || 500;
     sendJson(res, code, { error: code === 500 ? "Server error" : error.message });
   });
 });
 
-loadConfig()
+documents.initialize().then(() => loadConfig())
   .then((config) => {
     const port = process.env.PORT || config.port || 3000;
-    server.listen(port, () => {
+    server.listen(port, process.env.HOST || "127.0.0.1", () => {
       console.log(`FlowAgent server running on port ${port}`);
     });
   })
@@ -1250,3 +1274,4 @@ function shutdown() {
 }
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
+

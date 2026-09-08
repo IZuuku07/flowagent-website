@@ -121,38 +121,25 @@ function renderHeader(settings) {
   header.innerHTML = `
     <div class="container header-inner">
       <a class="brand" href="/">
-        <img class="flowagent-brand-logo" src="/flowagent-logo.png" alt="FlowAgent" width="72" height="72">
+        <img class="brand-logo" src="/${escapeHtml(settings.logoPath || 'flowagent-logo.png')}" alt="${escapeHtml(settings.brandName)}">
+        <h2 class="brand-text">${escapeHtml(settings.brandName)}</h2>
       </a>
       
-      <nav class="nav-links" id="mainNavigation" aria-label="Main navigation">
-        <a href="/">Home</a>
+      <nav class="nav-links">
         <a href="/services">Services</a>
-        <a href="/pricing">Plans</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/#caseStudySection">Case Studies</a>
         <a href="/faq">FAQ</a>
       </nav>
       
       <div class="header-actions">
-        <a href="/contact" class="btn btn-primary btn-sm">Let's talk ↗</a>
+        <a href="${escapeHtml(settings.bookingLink)}" class="btn btn-primary btn-sm">Book a Call</a>
       </div>
       
-      <button class="mobile-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNavigation">☰</button>
+      <button class="mobile-toggle" aria-label="Toggle menu">☰</button>
     </div>
   `;
 
-  const menuButton = header.querySelector('.mobile-toggle');
-  const navigation = header.querySelector('.nav-links');
-  menuButton.addEventListener('click', () => {
-    const open = menuButton.getAttribute('aria-expanded') !== 'true';
-    menuButton.setAttribute('aria-expanded', String(open));
-    navigation.classList.toggle('menu-open', open);
-  });
-  header.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      menuButton.setAttribute('aria-expanded', 'false');
-      navigation.classList.remove('menu-open');
-      menuButton.focus();
-    }
-  });
   // Header scroll effect
   window.addEventListener('scroll', () => {
     if (window.scrollY > 20) {
@@ -171,15 +158,16 @@ function renderFooter(settings) {
     <div class="container footer-grid">
       <div class="footer-brand">
         <a class="brand" href="/">
-          <img class="flowagent-brand-logo" src="/flowagent-logo.png" alt="FlowAgent" width="72" height="72">
+          <img class="brand-logo" src="/${escapeHtml(settings.logoPath || 'flowagent-logo.png')}" alt="${escapeHtml(settings.brandName)}">
+          <h2 class="brand-text">${escapeHtml(settings.brandName)}</h2>
         </a>
-        <p>AI content, customer support and automation, built around your business.</p>
+        <p>${escapeHtml(settings.footerBlurb)}</p>
       </div>
       
       <div class="footer-links">
         <h4>Services</h4>
         <ul id="footerServicesList">
-          <li><a href="/services/whatsapp-chat-bot">WhatsApp automation</a></li><li><a href="/services/shopify-seo-blog-automation">Shopify content</a></li><li><a href="/services/custom-n8n-automation">Custom workflows</a></li><li><a href="/services">All services</a></li>
+          <!-- Populated dynamically -->
         </ul>
       </div>
       
@@ -196,7 +184,7 @@ function renderFooter(settings) {
         <h4>${escapeHtml(settings.newsletterTitle)}</h4>
         <p style="font-size: 0.9rem; margin-bottom: 12px;">${escapeHtml(settings.newsletterText)}</p>
         <form class="newsletter-form" id="newsletterForm">
-          <input type="email" name="email" placeholder="Email address" aria-label="Email address for newsletter" required>
+          <input type="email" name="email" placeholder="Email address" required>
           <button type="submit" class="btn btn-primary btn-sm">Join</button>
         </form>
         <div id="newsletterStatus" style="margin-top: 8px; font-size: 0.85rem; color: var(--accent-light); display: none;">
@@ -250,25 +238,275 @@ function setupNewsletterForm() {
 // HOMEPAGE RENDERING
 // ============================================================================
 function renderHome(data) {
-  const home=data.pageContent.home;
-  const put=(id,html)=>{const element=document.getElementById(id);if(element)element.innerHTML=html;};
-  const offers=[{"slug":"social-media-automation","number":"01","category":"SOCIAL CONTENT","title":"Your content.<br>Published on schedule.","text":"Connect your UGC assets, captions, review, and publishing. Keep your social accounts moving from one content queue.","tools":"n8n / Media assets / Publishing APIs","label":"Explore social media publishing"},{"slug":"shopify-seo-blog-automation","number":"02","category":"BLOG PUBLISHING","title":"From topic<br>to published article.","text":"Generate drafts from your topics and business information, add a review step, and publish through a connected schedule.","tools":"n8n / AI / Shopify or CMS","label":"Explore blog writing and publishing"},{"slug":"whatsapp-chat-bot","number":"03","category":"WHATSAPP SUPPORT","title":"Answer questions.<br>Keep the conversation.","text":"Use your business information to answer common questions, collect enquiry details, and bring in a person when needed.","tools":"n8n / WhatsApp / AI","label":"Explore the WhatsApp AI chatbot"}];
-  put('heroSection',`<div class="container home-hero-layout">
-    <div class="hero-kicker"><span class="status-dot" aria-hidden="true"></span> CONTENT · SALES · SUPPORT · OPERATIONS <span class="hero-kicker-end">BUILT BY FLOWAGENT ↙</span></div>
-    <div class="home-hero-copy"><h1>${escapeHtml(home.heroTitle).replace('Less busywork.','<span>Less busywork.</span>')}</h1><p class="hero-text">${escapeHtml(home.heroText)}</p><div class="hero-actions"><a class="btn btn-primary btn-lg" href="${escapeHtml(home.primaryCtaLink)}">${escapeHtml(home.primaryCtaLabel)} <span aria-hidden="true">↗</span></a><a class="text-link" href="${escapeHtml(home.secondaryCtaLink)}">${escapeHtml(home.secondaryCtaLabel)} <span aria-hidden="true">→</span></a></div><p class="hero-footnote">30 videos. 30 images. Your approval before publishing.</p></div>
-    <figure class="hero-photo"><img src="/media/ecommerce-workspace.jpg" alt="An online store owner packing an order at a worktable" width="1400" height="935" fetchpriority="high"><figcaption><span>FOR THE WORK BEHIND<br>YOUR BUSINESS.</span><span class="photo-caption-arrow" aria-hidden="true">↗</span></figcaption><a class="hero-price-note" href="/pricing"><span>SOCIAL CONTENT</span><strong>60<small>posts</small></strong><span>EXPLORE THE PACKAGES ↗</span></a></figure>
-    <div class="hero-bottom"><span>YOUR BUSINESS NEEDS YOU.<br>THE COPY-PASTE DOESN’T.</span><a href="#servicesSection">See what we automate <span aria-hidden="true">↓</span></a></div>
-  </div>`);
-  put('integrationStrip','<div class="container integration-row"><span class="integration-label">WORKS WITH YOUR STACK</span><div class="integration-logos"><span>Shopify</span><span>WhatsApp</span><span>n8n</span><span>OpenAI</span><span>Google Sheets</span></div></div>');
-  put('servicesSection',`<div class="container"><div class="section-header section-header-split"><div><span class="eyebrow">01 / WHAT WE AUTOMATE</span><h2>Take the repeat<br>out of your day.</h2></div><p>Start with content and conversations.<br>Then connect the rest of your business.</p></div><div class="offer-grid">${offers.map(o=>`<a class="offer-card" href="/services/${o.slug}" aria-label="${o.label}"><span class="offer-number">${o.number}</span><div class="offer-heading"><span class="eyebrow">${o.category}</span><h3>${o.title}</h3></div><div class="offer-description"><p>${o.text}</p><span class="offer-tools">${o.tools}</span></div><span class="offer-arrow" aria-hidden="true">↗</span></a>`).join('')}</div><div class="catalog-footer"><p>Also: lead follow-up, bookings, inbox sorting, invoices, and reporting.</p><a class="text-link" href="/services">Explore the full service list ↗</a></div></div>`);
-  put('workflowDemo',`<div class="container demo-callout"><div class="demo-label"><span class="eyebrow">02 / TAKE A LOOK</span><span class="demo-example-tag">SCRIPTED EXAMPLE</span></div><div><h2>Try the conversation.<br><span>Then picture it in your store.</span></h2><p>Walk through an order question, a product recommendation, or a handoff to a person. Sample data and preset replies. No live orders or messages.</p><a class="btn btn-primary" href="/whatsapp-demo.html">Try the WhatsApp example <span aria-hidden="true">↗</span></a></div><span class="demo-big-arrow" aria-hidden="true">↗</span></div>`);
-  put('howItWorksSection',`<div class="container"><div class="section-header section-header-split"><div><span class="eyebrow">03 / THE PROCESS</span><h2>We build it.<br>You keep moving.</h2></div><p>A clear scope, connected tools, and a test run before the workflow becomes part of your day.</p></div><div class="steps-container">${[['Map the job.','Choose one task. Define the inputs, monthly volume, and what a good result looks like.'],['Connect the dots.','Bring together the tools, approved information, and permissions the workflow needs.'],['Test the awkward bits.','Check typical requests, missing information, and the moments that need a person.'],['Put it to work.','Launch the agreed system and decide how handoff, monitoring, and support will work.']].map((s,i)=>`<article class="step-card"><div class="step-number">0${i+1} <span aria-hidden="true">→</span></div><h3>${s[0]}</h3><p>${s[1]}</p></article>`).join('')}</div></div>`);
-  const cs=data.caseStudies[0];
-  put('caseStudySection',cs?`<div class="container implementation-layout"><div><span class="eyebrow">04 / INSIDE A WORKFLOW</span><h2>A product list.<br>A publishing routine.</h2><p>${escapeHtml(cs.challenge)}</p><p>The system connects a topic queue, article generation, images, and Shopify publishing. Completed and pending topics stay tracked in the sheet.</p><a class="text-link" href="/services/shopify-seo-blog-automation">See the Shopify SEO system ↗</a></div><div class="implementation-detail"><div class="implementation-heading"><span>PRODUCT → ARTICLE</span><span>WORKFLOW EXAMPLE</span></div><ol class="editorial-flow"><li><span>01</span><div><strong>Choose the product & topic</strong><p>Catalogue, keywords, and audience.</p></div></li><li><span>02</span><div><strong>Generate the article</strong><p>Structure, product references, and images.</p></div></li><li><span>03</span><div><strong>Review before publishing</strong><p>An approval step can be included.</p></div></li><li><span>04</span><div><strong>Publish & update the queue</strong><p>Shopify and topic tracking stay connected.</p></div></li></ol><p class="scope-note">An implementation example, not a promise of traffic or sales.</p></div></div>`:'');
-  put('pricingSection',`<div class="container"><div class="section-header section-header-split"><div><span class="eyebrow">SOCIAL MEDIA PACKAGES</span><h2>Every day.<br>Your way.</h2></div><p>Choose a video format. Both packages include 30 image posts. Pilot pricing is being finalized.</p></div><div class="offer-grid"><article class="offer-card"><span class="offer-number">01</span><div class="offer-heading"><span class="eyebrow">EVERYDAY</span><h3>Short videos.<br>Steady presence.</h3></div><div class="offer-description"><p>30 ten-second videos with Gemini Omni. 30 branded image posts. Review and approve your content in the Studio.</p><a class="text-link" href="/studio">Open Studio ↗</a></div></article><article class="offer-card"><span class="offer-number">02</span><div class="offer-heading"><span class="eyebrow">PREMIUM</span><h3>More time.<br>More story.</h3></div><div class="offer-description"><p>30 twenty-second videos with Seedance 2.5. 30 branded image posts. The same content review workflow.</p><a class="text-link" href="/studio">Open Studio ↗</a></div></article></div><p class="pricing-scope">Early access. Generation requires connected providers. Social publishing and message replies require account setup and validation.</p></div>`);
-  put('faqSection',`<div class="container faq-compact"><div><span class="eyebrow">06 / GOOD QUESTIONS</span><h2>Before we<br>get into it.</h2><a class="text-link" href="/faq">All the FAQs ↗</a></div><div class="faq-list">${data.faqs.filter(f=>['faq-002','faq-003','faq-006','faq-009','faq-scope'].includes(f.id)).map(f=>`<details class="faq-item"><summary class="faq-summary">${escapeHtml(f.question)}<span aria-hidden="true">+</span></summary><div class="faq-answer">${escapeHtml(f.answer)}</div></details>`).join('')}</div></div>`);
-  put('finalCtaSection',`<div class="container final-editorial"><span class="eyebrow">START WITH THE TASK YOU KEEP PUTTING OFF.</span><h2>Let’s take it<br><span>off your plate.</span></h2><div class="final-editorial-bottom"><p>Tell us what your business does manually.<br>We’ll talk through what can be automated.</p><a class="btn btn-primary btn-lg" href="/contact">Tell us about your workflow ↗</a></div></div>`);
+  const { pageContent: { home }, services, pricingPlans, faqs, caseStudies, settings } = data;
+  
+  // 1. Hero Section
+  const hero = document.getElementById("heroSection");
+  if (hero) {
+    hero.innerHTML = `
+      <div class="hero-glow"></div>
+      <div class="container">
+        <div class="hero-content animate-fade-up">
+          <span class="section-badge">AI Automation Agency</span>
+          <h1 class="text-gradient">${escapeHtml(home.heroTitle)}</h1>
+          <p class="hero-text">${escapeHtml(home.heroText)}</p>
+          <div class="hero-actions">
+            <a href="${escapeHtml(home.primaryCtaLink)}" class="btn btn-primary btn-lg">${escapeHtml(home.primaryCtaLabel)}</a>
+            <a href="${escapeHtml(home.secondaryCtaLink)}" class="btn btn-secondary btn-lg">${escapeHtml(home.secondaryCtaLabel)}</a>
+          </div>
+          <div class="hero-trust">
+            <div class="hero-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> No long-term contracts</div>
+            <div class="hero-trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Built for Shopify</div>
+          </div>
+      </div>
+    `;
+  }
+
+  // 2. Integration Strip
+  const strip = document.getElementById("integrationStrip");
+  if (strip) {
+    strip.innerHTML = `
+      <div class="container">
+        <div class="integration-logos">
+          <div class="integration-logo">Shopify</div>
+          <div class="integration-logo">n8n</div>
+          <div class="integration-logo">OpenAI</div>
+          <div class="integration-logo">WhatsApp</div>
+          <div class="integration-logo">Google Sheets</div>
+          <div class="integration-logo">Stripe</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Problem Section
+  const problem = document.getElementById("problemSection");
+  if (problem) {
+    problem.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">${escapeHtml(home.benefitsTitle)}</h2>
+          <p>${escapeHtml(home.benefitsIntro || "Manual operations block growth. Here is what happens when you automate.")}</p>
+        </div>
+        <div class="grid-3">
+          <div class="card animate-fade-up delay-100">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <h3>Reduce Operational Cost</h3>
+            <p>Replace expensive manual data entry, content creation, and customer support with AI agents that work 24/7 without a salary.</p>
+          </div>
+          <div class="card animate-fade-up delay-200">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <h3>Scale Output Volume</h3>
+            <p>Publish 30 SEO articles a month or answer 10,000 customer inquiries a day without hiring a single new team member.</p>
+          </div>
+          <div class="card animate-fade-up delay-300">
+            <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <h3>Consistent Quality</h3>
+            <p>Automated systems execute exactly as programmed every single time. No off-days, no human error, no missed deadlines.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 4. Services Section
+  const servicesSec = document.getElementById("servicesSection");
+  if (servicesSec) {
+    const activeServices = services.filter(s => !s.legacy);
+    
+    // Update footer services list while we have them
+    const footerSvc = document.getElementById("footerServicesList");
+    if (footerSvc) {
+      footerSvc.innerHTML = activeServices.map(s => `<li><a href="${serviceLink(s)}">${escapeHtml(s.title)}</a></li>`).join('');
+    }
+
+    servicesSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Our Systems</span>
+          <h2 class="text-gradient">Ready-to-deploy automation systems</h2>
+          <p>Productized AI workflows built specifically for modern ecommerce brands.</p>
+        </div>
+        <div class="grid-2">
+          ${activeServices.map((svc, i) => `
+            <div class="card service-card animate-fade-up delay-${(i%2+1)*100} ${svc.featured ? 'featured' : ''}">
+              <div class="service-header">
+                ${renderServiceMedia(svc)}
+                <h3>${escapeHtml(svc.title)}</h3>
+                <div class="service-price">${escapeHtml(svc.price)}</div>
+              </div>
+              <p>${escapeHtml(svc.description)}</p>
+              <ul class="service-features">
+                ${svc.benefits.slice(0, 4).map(b => `
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(b)}</li>
+                `).join('')}
+              </ul>
+              <div class="service-footer">
+                <a href="${serviceLink(svc)}" class="btn btn-secondary">View System details</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 5. How It Works
+  const steps = document.getElementById("howItWorksSection");
+  if (steps) {
+    steps.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">How we implement</h2>
+          <p>From discovery to a fully automated operation.</p>
+        </div>
+        <div class="steps-container">
+          <div class="step-card animate-fade-up delay-100">
+            <div class="step-number">01</div>
+            <h3>System Mapping</h3>
+            <p>We analyze your current manual workflows and design the automation architecture.</p>
+          </div>
+          <div class="step-card animate-fade-up delay-200">
+            <div class="step-number">02</div>
+            <h3>Integration</h3>
+            <p>We connect your applications (Shopify, CRM) with AI engines (OpenAI, Anthropic).</p>
+          </div>
+          <div class="step-card animate-fade-up delay-300">
+            <div class="step-number">03</div>
+            <h3>Testing</h3>
+            <p>We run shadow testing to ensure the AI output matches your brand guidelines exactly.</p>
+          </div>
+          <div class="step-card animate-fade-up delay-400">
+            <div class="step-number">04</div>
+            <h3>Deployment</h3>
+            <p>The system goes live, replacing manual labor with automated execution 24/7.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+    // 6. Workflow Demo
+    const demo = document.getElementById("workflowDemo");
+    if (demo) {
+      demo.innerHTML = `
+        <div class="container">
+          <div class="section-header animate-fade-up">
+            <h2 class="text-gradient">Workflow Demo</h2>
+            <p>See our automated systems in action.</p>
+          </div>
+          <div style="background: var(--surface-soft); padding: 4rem 2rem; border-radius: 24px; border: 1px dashed var(--line); text-align: center;" class="animate-fade-up delay-100">
+            <p style="color: var(--text-secondary); font-size: 1.25rem;">Interactive demo coming soon.</p>
+            <a href="/contact" class="btn btn-secondary" style="margin-top: 1.5rem;">Request a live demo</a>
+          </div>
+        </div>
+      `;
+    }
+
+    // 7. Case Study
+  const caseStudySec = document.getElementById("caseStudySection");
+  if (caseStudySec && caseStudies && caseStudies.length > 0) {
+    const cs = caseStudies[0];
+    caseStudySec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Case Study</span>
+          <h2 class="text-gradient">Real business outcomes</h2>
+        </div>
+        <div class="card case-study-card animate-fade-up delay-100">
+          <div>
+            <span class="case-study-meta">${escapeHtml(cs.clientType)}</span>
+            <h3 style="font-size: 2rem; margin-bottom: 24px;">${escapeHtml(cs.title)}</h3>
+            <p style="margin-bottom: 24px;"><strong>The Challenge:</strong> ${escapeHtml(cs.challenge)}</p>
+            <p style="margin-bottom: 32px;"><strong>The Solution:</strong> ${escapeHtml(cs.solution)}</p>
+            <a href="${escapeHtml(cs.ctaLink)}" class="btn btn-primary">${escapeHtml(cs.ctaLabel)}</a>
+          </div>
+          <div class="case-study-results">
+            <h4 style="color: var(--text); margin-bottom: 24px; font-size: 1.2rem;">The Results</h4>
+            ${cs.results.map(r => `
+              <div class="result-item">
+                <div class="result-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                <div style="color: var(--text-secondary); font-size: 1.1rem;">${escapeHtml(r)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 9. Pricing
+  const pricingSec = document.getElementById("pricingSection");
+  if (pricingSec) {
+    pricingSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <span class="section-badge">Pricing</span>
+          <h2 class="text-gradient">Simple, transparent pricing</h2>
+          <p>Choose the automation system that fits your brand.</p>
+        </div>
+        <div class="grid-3">
+          ${pricingPlans.map((plan, i) => `
+            <div class="card pricing-card animate-fade-up delay-${(i+1)*100} ${plan.highlight ? 'highlight' : ''}">
+              ${plan.highlight ? '<span class="section-badge" style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); margin:0; background:var(--accent); color:#fff; border:none;">Most Popular</span>' : ''}
+              <div class="plan-name">${escapeHtml(plan.name)}</div>
+              <div class="plan-price">${escapeHtml(plan.price)}</div>
+              <div class="plan-summary">${escapeHtml(plan.summary)}</div>
+              <ul class="pricing-features">
+                ${plan.features.map(f => `
+                  <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> ${escapeHtml(f)}</li>
+                `).join('')}
+              </ul>
+              <a href="/checkout.html?serviceId=${escapeHtml(plan.id)}" class="btn ${plan.highlight ? 'btn-primary' : 'btn-secondary'}" style="width: 100%;">Get Started</a>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 10. FAQ
+  const faqSec = document.getElementById("faqSection");
+  if (faqSec) {
+    faqSec.innerHTML = `
+      <div class="container">
+        <div class="section-header animate-fade-up">
+          <h2 class="text-gradient">Frequently Asked Questions</h2>
+        </div>
+        <div class="faq-list">
+          ${faqs.map((f, i) => `
+            <details class="faq-item animate-fade-up delay-${(i%5)*100}">
+              <summary class="faq-summary">
+                ${escapeHtml(f.question)}
+                <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </summary>
+              <div class="faq-answer">${escapeHtml(f.answer)}</div>
+            </details>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // 11. Final CTA
+  const finalCta = document.getElementById("finalCtaSection");
+  if (finalCta) {
+    finalCta.innerHTML = `
+      <div class="final-cta-bg"></div>
+      <div class="container relative z-10 animate-fade-up">
+        <h2 class="text-gradient">${escapeHtml(home.finalCtaTitle)}</h2>
+        <p>${escapeHtml(home.finalCtaText)}</p>
+        <a href="${escapeHtml(home.finalCtaLink)}" class="btn btn-primary btn-lg">${escapeHtml(home.finalCtaLabel)}</a>
+      </div>
+    `;
+  }
+
+  setupAnimations();
 }
+
+// ============================================================================
+// SERVICE DETAIL RENDERING
+// ============================================================================
 function renderServiceDetailPage(data) {
   const serviceSlug = window.location.pathname.split("/").pop().replace(".html", "");
   const service = data.services.find(s => s.slug === serviceSlug);
@@ -392,10 +630,62 @@ function renderServicesPage(data) {
 }
 
 function renderPricingPage(data) {
- const intro=document.getElementById('pricingIntro');if(intro)intro.innerHTML='<div class="container"><div class="section-header"><span class="eyebrow">SOCIAL MEDIA PACKAGES / EARLY ACCESS</span><h1>Show up.<br>Every day.</h1><p>Two video options. One place to review your content.<br>Customer pricing will be confirmed after the pilot.</p></div></div>';
- const grid=document.getElementById('pricingFullGrid');if(grid)grid.innerHTML=[['Everyday','10 seconds','Gemini Omni','30 short videos for everyday posts.'],['Premium','20 seconds','Seedance 2.5','30 longer videos generated in one pass.']].map(p=>`<article class="card pricing-card"><span class="eyebrow">${p[0]}</span><h2>${p[1]}</h2><p>${p[3]}</p><ul class="pricing-features"><li>${p[2]} video generation</li><li>30 branded image posts per month</li><li>Content approval workspace</li><li>Publishing setup for agreed channels</li></ul><p class="scope-note">Pilot pricing to be confirmed. Social publishing and replies require separate account connections.</p><a class="btn btn-primary" href="/studio">Open Content Studio ↗</a></article>`).join('');
- const table=document.getElementById('pricingComparisonTable');if(table)table.innerHTML='<div class="pricing-table-wrap"><table class="scope-table"><thead><tr><th>Included</th><th>Everyday</th><th>Premium</th></tr></thead><tbody><tr><th>Videos / month</th><td>30 × 10 seconds</td><td>30 × 20 seconds</td></tr><tr><th>Images / month</th><td>30</td><td>30</td></tr><tr><th>Video model</th><td>Gemini Omni</td><td>Seedance 2.5</td></tr><tr><th>Human approval</th><td>Included</td><td>Included</td></tr></tbody></table></div>';
+  const intro = document.getElementById("pricingIntro");
+  if (intro) {
+    intro.innerHTML = `
+      <div class="container">
+          <div class="section-header animate-fade-up">
+          <h1 class="text-gradient">Simple, Transparent Pricing</h1>
+          <p>Choose the automation system that fits your brand.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  const compTable = document.getElementById("pricingComparisonTable");
+  if (compTable) {
+    compTable.innerHTML = `
+      <div style="padding: 2rem; text-align: center;" class="animate-fade-up delay-100">
+        <p>Full comparison matrix available during consultation to match your exact business needs.</p>
+      </div>
+    `;
+  }
+
+  const container = document.getElementById("pricingFullGrid") || document.getElementById("pricingSection");
+  if (!container) return;
+  if (!data.pricingPlans || data.pricingPlans.length === 0) {
+    container.innerHTML = '<div class="state-empty">No pricing plans available.</div>';
+    return;
+  }
+  const isOldDesign = container.id === "pricingSection";
+  const cardsHtml = data.pricingPlans.map((plan, i) => `
+    <div class="card pricing-card animate-fade-up delay-${(i%3+1)*100} ${plan.highlight ? 'featured' : ''}">
+      <h3>${escapeHtml(plan.name)}</h3>
+      <div class="pricing-price">${escapeHtml(plan.price)}</div>
+      <p class="pricing-summary">${escapeHtml(plan.summary)}</p>
+      <ul class="pricing-features">
+        ${plan.features.map(f => `<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>${escapeHtml(f)}</li>`).join('')}
+      </ul>
+      <div class="pricing-footer">
+        <a href="/checkout.html?serviceId=${plan.id}" class="btn ${plan.highlight ? 'btn-primary' : 'btn-secondary'}" style="width: 100%">Get Started</a>
+      </div>
+    </div>
+  `).join('');
+
+  if (isOldDesign) {
+    container.innerHTML = `
+        <div class="container">
+          <div class="section-header animate-fade-up">
+          <h1 class="text-gradient">Simple, Transparent Pricing</h1>
+          <p>Choose the automation system that fits your brand.</p>
+        </div>
+        <div class="grid-3">${cardsHtml}</div>
+      </div>`;
+  } else {
+    container.innerHTML = cardsHtml;
+  }
 }
+
 function renderContactPage(data) {
   const contactInfo = data.pageContent.contact || {};
   const settings = data.settings || {};

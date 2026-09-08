@@ -827,6 +827,10 @@ function showAdmin(loggedIn) {
 
 function renderAdminForms(data) {
   adminState.data = data;
+  let storageNote=document.getElementById('storageNote');
+  if(!storageNote){storageNote=document.createElement('p');storageNote.id='storageNote';storageNote.setAttribute('role','status');document.getElementById('dashboardTab').prepend(storageNote);}
+  storageNote.textContent=data.storage?.mode==='database'?'Database connected. Saved edits are kept outside Render.':data.storage?.hosted&&!data.storage?.persistent?'Database not connected. Edits on Render Free can be lost after a restart.':'Local preview. Edits are saved on this computer.';
+
   renderOverviewCards(data);
   renderSettingsForm(data.settings);
   renderPageContentForm(data.pageContent);
@@ -862,8 +866,8 @@ function renderSettingsForm(settings) {
       <label>Country<input name="country" value="${escapeHtml(settings.country)}"></label>
       <label>Logo Path<input name="logoPath" value="${escapeHtml(settings.logoPath)}"></label>
       <label>Stripe Link<input name="defaultStripeLink" value="${escapeHtml(settings.defaultStripeLink)}"></label>
-      <label>PayPal Link<input name="defaultPaypalLink" value="${escapeHtml(settings.defaultPaypalLink)}"></label>
-      <label>Bank Name<input name="bankName" value="${escapeHtml(settings.bankName)}"></label>
+      <label>PayPal account email<input type="email" name="paypalEmail" value="${escapeHtml(settings.paypalEmail)}"></label><label>PayPal payment link (optional)<input name="defaultPaypalLink" value="${escapeHtml(settings.defaultPaypalLink)}"></label>
+      <p class="form-note">Your PayPal email identifies your account. Automatic checkout also needs PayPal API credentials configured on your hosting server.</p><label>Bank Name<input name="bankName" value="${escapeHtml(settings.bankName)}"></label>
       <label>Account Holder<input name="accountHolder" value="${escapeHtml(settings.accountHolder)}"></label>
       <label>Account Number<input name="accountNumber" value="${escapeHtml(settings.accountNumber)}"></label>
       <label>IBAN<input name="iban" value="${escapeHtml(settings.iban)}"></label>
@@ -880,36 +884,14 @@ function renderSettingsForm(settings) {
 }
 
 function renderPageContentForm(pageContent) {
-  const form = document.getElementById("pageContentForm");
-  if (!form) return;
-  form.innerHTML = `
-    <label>Home Hero Title<textarea name="homeHeroTitle" rows="2">${escapeHtml(pageContent.home.heroTitle)}</textarea></label>
-    <label>Home Hero Text<textarea name="homeHeroText" rows="3">${escapeHtml(pageContent.home.heroText)}</textarea></label>
-    <label>Home Final CTA Title<textarea name="homeFinalCtaTitle" rows="2">${escapeHtml(pageContent.home.finalCtaTitle)}</textarea></label>
-    <label>Home Final CTA Text<textarea name="homeFinalCtaText" rows="3">${escapeHtml(pageContent.home.finalCtaText)}</textarea></label>
-    <label>About Headline<textarea name="aboutHeadline" rows="2">${escapeHtml(pageContent.about.headline)}</textarea></label>
-    <label>About Intro<textarea name="aboutIntro" rows="3">${escapeHtml(pageContent.about.intro)}</textarea></label>
-    <label>Pricing Headline<textarea name="pricingHeadline" rows="2">${escapeHtml(pageContent.pricing.headline)}</textarea></label>
-    <label>Contact Headline<textarea name="contactHeadline" rows="2">${escapeHtml(pageContent.contact.headline)}</textarea></label>
-    <label>FAQ Headline<textarea name="faqHeadline" rows="2">${escapeHtml(pageContent.faq.headline)}</textarea></label>
-    <label>Blog Headline<textarea name="blogHeadline" rows="2">${escapeHtml(pageContent.blog.headline)}</textarea></label>
-    <button class="button button-small" type="submit">Save Page Content</button>
-    <p class="form-note" id="pageContentMessage"></p>
-  `;
+ const form=document.getElementById('pageContentForm');
+ const label=k=>k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+ const fields=(obj,path=[])=>Object.entries(obj).map(([key,value])=>typeof value==='string'?`<label>${escapeHtml(label(key))}<textarea data-content-path="${escapeHtml(JSON.stringify([...path,key]))}">${escapeHtml(value)}</textarea></label>`:(value&&typeof value==='object'&&!Array.isArray(value)?`<fieldset class="editor-group"><legend>${escapeHtml(label(key))}</legend>${fields(value,[...path,key])}</fieldset>`:'')).join('');
+ form.innerHTML=fields(pageContent)+'<button class="button" type="submit">Save page content</button><p id="pageContentMessage" role="status"></p>';
 }
-
 function renderSeoForm(seo) {
-  const form = document.getElementById("seoForm");
-  if (!form) return;
-  form.innerHTML = `
-    <label>Default Title<input name="defaultTitle" value="${escapeHtml(seo.defaultTitle)}"></label>
-    <label>Default Description<textarea name="defaultDescription" rows="3">${escapeHtml(seo.defaultDescription)}</textarea></label>
-    <label>Site URL<input name="siteUrl" value="${escapeHtml(seo.siteUrl)}"></label>
-    <label>Twitter Handle<input name="twitterHandle" value="${escapeHtml(seo.twitterHandle)}"></label>
-    <label>Page SEO JSON<textarea name="pagesJson" rows="10">${escapeHtml(JSON.stringify(seo.pages, null, 2))}</textarea></label>
-    <button class="button button-small" type="submit">Save SEO</button>
-    <p class="form-note" id="seoMessage"></p>
-  `;
+ const paths=new Set([...Object.keys(seo.pages||{}),...adminState.data.services.filter(s=>!s.legacy).map(s=>'/services/'+s.slug),...adminState.data.blogPosts.map(p=>'/blog/'+p.slug)]);
+ document.getElementById('seoForm').innerHTML=`<label>Website URL<input name="siteUrl" type="url" required value="${escapeHtml(seo.siteUrl)}"></label><label>Default search title<input name="defaultTitle" value="${escapeHtml(seo.defaultTitle)}"></label><label>Default description<textarea name="defaultDescription">${escapeHtml(seo.defaultDescription)}</textarea></label><input type="hidden" name="twitterHandle" value="${escapeHtml(seo.twitterHandle)}"><p>Edit how each page appears in search and link previews. Google may choose a different snippet.</p>`+[...paths].map(path=>`<fieldset class="editor-group" data-seo-path="${escapeHtml(path)}"><legend>${escapeHtml(path)}</legend><label>Search title<input data-seo-title value="${escapeHtml(seo.pages?.[path]?.title||'')}"></label><label>Search description<textarea data-seo-description>${escapeHtml(seo.pages?.[path]?.description||'')}</textarea></label></fieldset>`).join('')+'<button class="button" type="submit">Save search settings</button><p id="seoMessage" role="status"></p>';
 }
 
 function renderCollectionList(targetId, items, labelGetter, editAttr, deleteAttr) {
@@ -938,7 +920,7 @@ function renderServiceAdmin(services) {
       <div class="form-grid">
         <label>Slug<input name="slug"></label>
         <label>Title<input name="title"></label>
-        <label>Price<input name="price"></label>
+        <label>Price<input name="price"></label><label>Category<select name="category"><option>Content & Publishing</option><option>Sales & Bookings</option><option>Customer Support</option><option>Business Operations</option></select></label><label><input type="checkbox" name="quoteOnly"> Confirm scope and price before payment</label>
         <label>Audience<input name="audience"></label>
         <label>Stripe Link<input name="stripeLink"></label>
         <label>PayPal Link<input name="paypalLink"></label>
@@ -1289,20 +1271,11 @@ function bindAdminActions() {
     await api("/api/settings", { method: "PUT", body: JSON.stringify(Object.fromEntries(new FormData(form).entries())) });
   }, "settingsMessage");
 
-  bindSimpleSubmit("pageContentForm", async (form) => {
-    const fd = new FormData(form);
-    await api("/api/page-content", {
-      method: "PUT",
-      body: JSON.stringify({
-        home: { heroTitle: fd.get("homeHeroTitle"), heroText: fd.get("homeHeroText"), finalCtaTitle: fd.get("homeFinalCtaTitle"), finalCtaText: fd.get("homeFinalCtaText") },
-        about: { headline: fd.get("aboutHeadline"), intro: fd.get("aboutIntro") },
-        pricing: { headline: fd.get("pricingHeadline") },
-        contact: { headline: fd.get("contactHeadline") },
-        faq: { headline: fd.get("faqHeadline") },
-        blog: { headline: fd.get("blogHeadline") }
-      })
-    });
-  }, "pageContentMessage");
+  bindSimpleSubmit('pageContentForm',async(form)=>{
+ const content=JSON.parse(JSON.stringify(adminState.data.pageContent));
+ form.querySelectorAll('[data-content-path]').forEach(input=>{const path=JSON.parse(input.dataset.contentPath);let target=content;for(const key of path.slice(0,-1))target=target[key];target[path.at(-1)]=input.value;});
+ await api('/api/page-content',{method:'PUT',body:JSON.stringify(content)});
+ },'pageContentMessage');
 
   bindSimpleSubmit("seoForm", async (form) => {
     const fd = new FormData(form);
@@ -1313,7 +1286,7 @@ function bindAdminActions() {
         defaultDescription: fd.get("defaultDescription"),
         siteUrl: fd.get("siteUrl"),
         twitterHandle: fd.get("twitterHandle"),
-        pages: JSON.parse(String(fd.get("pagesJson") || "{}"))
+        pages: Object.fromEntries([...form.querySelectorAll('[data-seo-path]')].map(row=>[row.dataset.seoPath,{title:row.querySelector('[data-seo-title]').value,description:row.querySelector('[data-seo-description]').value}]))
       })
     });
   }, "seoMessage");
@@ -1323,6 +1296,8 @@ function bindAdminActions() {
     slug: fd.get("slug"),
     title: fd.get("title"),
     price: fd.get("price"),
+    category: fd.get("category"),
+    quoteOnly: fd.get("quoteOnly") === "on",
     audience: fd.get("audience"),
     stripeLink: fd.get("stripeLink"),
     paypalLink: fd.get("paypalLink"),
@@ -1671,3 +1646,13 @@ boot().catch((error) => {
     main.innerHTML = '<section class="section"><div class="glass-card" style="text-align:center;padding:3rem"><h2>Something went wrong</h2><p>Please refresh the page or try again later.</p></div></section>';
   }
 });
+
+function selectAdminPanel(id){
+ const panel=document.getElementById(id);if(!panel?.classList.contains('admin-panel'))return;
+ document.querySelectorAll('.admin-panel').forEach(p=>p.hidden=p.id!==id);
+ document.querySelectorAll('.admin-nav-link').forEach(a=>{a.classList.toggle('active',a.dataset.target===id);if(a.dataset.target===id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+}
+document.querySelectorAll('.admin-nav-link').forEach(a=>a.addEventListener('click',()=>selectAdminPanel(a.dataset.target)));
+window.addEventListener('hashchange',()=>selectAdminPanel(location.hash.slice(1)));
+selectAdminPanel(location.hash.slice(1)||'dashboardTab');
+for(const id of ['orderStatusFilter','orderPaymentFilter'])document.getElementById(id)?.addEventListener('change',()=>renderOrderAdmin(adminState.data?.orders||[]));
