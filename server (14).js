@@ -4,14 +4,9 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 
 const rootDir = __dirname;
-const seoTools = require("./seo.cjs");
-const storage = require("./storage.cjs");
-const storagePaths = storage.paths(rootDir);
-const documents = require("./document-store.cjs").createDocumentStore({root:rootDir});
-const studio = require('./studio-backend.cjs').createStudio({directory: rootDir, documentStore: documents, verifySession, parseJsonBody, sendJson});
-const publicContentPath = storagePaths.publicContent;
-const privateRuntimePath = storagePaths.privateRuntime;
-const configPath = storagePaths.config;
+const publicContentPath = path.join(rootDir, "data", "public-content.json");
+const privateRuntimePath = path.join(rootDir, "data", "private-runtime.json");
+const configPath = path.join(rootDir, "server-config.json");
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -43,7 +38,7 @@ let configCache;
 const PUBLIC_SETTINGS_KEYS = [
   "brandName", "tagline", "businessEmail", "whatsapp", "phone",
   "bookingLink", "currency", "country", "address", "logoPath",
-  "defaultStripeLink", "defaultPaypalLink", "paypalEmail",
+  "defaultStripeLink", "defaultPaypalLink",
   "newsletterTitle", "newsletterText", "footerBlurb"
 ];
 
@@ -59,32 +54,24 @@ async function loadConfig() {
   }
   let fileConfig = {};
   try {
-    fileConfig = await documents.read("config") || {};
-  } catch (error) {
-    if(documents.remote) throw error;
-    // Local development may use environment variables when no config file exists.
+    const raw = await fs.readFile(configPath, "utf8");
+    fileConfig = JSON.parse(raw);
+  } catch {
+    // No config file — fall back entirely to environment variables
   }
   configCache = {
     port: process.env.PORT || fileConfig.port || 3000,
     adminUsername: process.env.ADMIN_USERNAME || fileConfig.adminUsername || "",
-    adminPasswordHash: fileConfig.adminPasswordHash || process.env.ADMIN_PASSWORD_HASH || "",
-    adminPasswordSalt: fileConfig.adminPasswordSalt || process.env.ADMIN_PASSWORD_SALT || "",
+    adminPasswordHash: process.env.ADMIN_PASSWORD_HASH || fileConfig.adminPasswordHash || "",
+    adminPasswordSalt: process.env.ADMIN_PASSWORD_SALT || fileConfig.adminPasswordSalt || "",
     passwordIterations: parseInt(process.env.ADMIN_PASSWORD_ITERATIONS || fileConfig.passwordIterations || 120000, 10),
-    sessionSecret: fileConfig.sessionSecret || process.env.SESSION_SECRET || "",
+    sessionSecret: process.env.SESSION_SECRET || fileConfig.sessionSecret || "",
     stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || fileConfig.stripePublishableKey || "",
-    paypalEnvironment: process.env.PAYPAL_ENVIRONMENT === "live" ? "live" : "sandbox",
     paypalClientId: process.env.PAYPAL_CLIENT_ID || fileConfig.paypalClientId || "",
     paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET || fileConfig.paypalClientSecret || "",
     n8nCheckoutWebhookUrl: process.env.N8N_CHECKOUT_WEBHOOK_URL || fileConfig.n8nCheckoutWebhookUrl || "",
-    web3FormsAccessKey: process.env.WEB3FORMS_ACCESS_KEY || process.env.WEB3FORMS_KEY || fileConfig.web3FormsAccessKey || "",
     baseUrl: process.env.BASE_URL || fileConfig.baseUrl || "http://localhost:3000"
   };
-  if (!configCache.adminPasswordHash && process.env.ADMIN_PASSWORD) {
-    if (process.env.ADMIN_PASSWORD.length < 16) throw new Error("ADMIN_PASSWORD must have at least 16 characters");
-    configCache.adminPasswordSalt = crypto.randomBytes(16).toString("hex");
-    configCache.passwordIterations = 120000;
-    configCache.adminPasswordHash = crypto.pbkdf2Sync(process.env.ADMIN_PASSWORD, configCache.adminPasswordSalt, 120000, 64, "sha512").toString("hex");
-  }
   return configCache;
 }
 
@@ -109,17 +96,19 @@ function createDefaultPrivateRuntime() {
 }
 
 async function readPublicContent() {
-  const data = await documents.read("public");
-  if (!data) throw Object.assign(new Error("Website content is not initialized"), {statusCode:503});
-  return data;
+  const raw = await fs.readFile(publicContentPath, "utf8");
+  return JSON.parse(raw);
 }
 
 async function readPrivateRuntime() {
- const stored = await documents.read('private');
- if(stored!==null)return stored;
- const defaults=createDefaultPrivateRuntime();
- await documents.write('private',defaults,{ifAbsent:true});
- return await documents.read('private');
+  try {
+    const raw = await fs.readFile(privateRuntimePath, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    const defaults = createDefaultPrivateRuntime();
+    await fs.writeFile(privateRuntimePath, JSON.stringify(defaults, null, 2));
+    return defaults;
+  }
 }
 
 async function readStore() {
@@ -169,7 +158,7 @@ async function writePublicContent(store) {
     blogPosts: store.blogPosts,
     media: store.media
   };
-  await documents.write("public",data);
+  await fs.writeFile(publicContentPath, JSON.stringify(data, null, 2));
 }
 
 async function writePrivateRuntime(store) {
@@ -181,7 +170,7 @@ async function writePrivateRuntime(store) {
     newsletterSubscribers: store.newsletterSubscribers || [],
     orders: store.orders || []
   };
-  await documents.write("private",data);
+  await fs.writeFile(privateRuntimePath, JSON.stringify(data, null, 2));
 }
 
 async function writeStore(data) {
@@ -228,7 +217,6 @@ async function parseJsonBody(req, maxBytes = 1048576) {
   }
   const raw = Buffer.concat(chunks).toString("utf8");
   try {
-    if ((req.headers["content-type"]||"").startsWith("application/x-www-form-urlencoded") && new URL(req.url,"http://local").pathname === "/api/forms/contact") return Object.fromEntries(new URLSearchParams(raw));
     return raw ? JSON.parse(raw) : {};
   } catch {
     throw Object.assign(new Error("Invalid JSON body"), { statusCode: 400 });
@@ -263,36 +251,6 @@ function addSecurityHeaders(res) {
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 }
 
-async function sendFormNotification(config, subject, fields) {
-  if (!config.web3FormsAccessKey) {
-    return false;
-  }
-
-  try {
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: config.web3FormsAccessKey,
-        subject,
-        ...fields
-      }),
-      signal: AbortSignal.timeout(10000)
-    });
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok || !payload.success) {
-      console.warn("Web3Forms notification failed:", payload.message || response.status);
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    console.warn("Web3Forms notification failed:", err.message);
-    return false;
-  }
-}
-
 function escapeXml(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
@@ -310,8 +268,8 @@ function parseCookies(req) {
 }
 
 function createSessionValue(username, secret) {
-  const payload = Buffer.from(JSON.stringify({username,expires:Date.now()+8*60*60*1000})).toString('base64url');
-  return payload+'.'+crypto.createHmac('sha256',secret).update(payload).digest('hex');
+  const signature = crypto.createHmac("sha256", secret).update(username).digest("hex");
+  return `${username}.${signature}`;
 }
 
 function verifyPassword(password, config) {
@@ -336,15 +294,24 @@ function verifyPassword(password, config) {
 }
 
 function verifySession(req, config) {
- if(!config.sessionSecret||!config.adminUsername)return false;
- try {
-  const session=parseCookies(req).flowagent_session||'';
-  const [payload,signature,...extra]=session.split('.');if(!payload||!signature||extra.length)return false;
-  const expected=crypto.createHmac('sha256',config.sessionSecret).update(payload).digest('hex');
-  if(!crypto.timingSafeEqual(Buffer.from(signature),Buffer.from(expected)))return false;
-  const data=JSON.parse(Buffer.from(payload,'base64url').toString());
-  return data.username===config.adminUsername&&Number.isFinite(data.expires)&&data.expires>Date.now();
- } catch { return false; }
+  const cookies = parseCookies(req);
+  const session = cookies.flowagent_session;
+  if (!session) {
+    return false;
+  }
+
+  const [username, signature] = session.split(".");
+  if (!username || !signature || username !== config.adminUsername) {
+    return false;
+  }
+
+  const expected = crypto.createHmac("sha256", config.sessionSecret).update(username).digest("hex");
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 
 function ensureAdmin(req, res, config) {
@@ -408,8 +375,6 @@ function normalizeCollectionItem(collection, body, existingId) {
     return {
       id: existingId || body.id || crypto.randomUUID(),
       slug: String(body.slug || "").trim(),
-      category: ["Content & Publishing","Sales & Bookings","Customer Support","Business Operations"].includes(body.category) ? body.category : "Business Operations",
-      quoteOnly: Boolean(body.quoteOnly),
       title: String(body.title || "").trim(),
       price: String(body.price || "").trim(),
       description: String(body.description || "").trim(),
@@ -514,7 +479,6 @@ function normalizeSettings(body, previous) {
     address: String(body.address || "").trim(),
     logoPath: String(body.logoPath || "").trim(),
     defaultStripeLink: String(body.defaultStripeLink || "").trim(),
-    paypalEmail: String(body.paypalEmail || previous.paypalEmail || "").trim(),
     defaultPaypalLink: String(body.defaultPaypalLink || "").trim(),
     bankName: String(body.bankName || "").trim(),
     accountHolder: String(body.accountHolder || "").trim(),
@@ -579,7 +543,7 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
     }
 
     const body = await parseJsonBody(req);
-    collection[index] = { ...collection[index], ...normalizeCollectionItem(collectionKey, body, itemId) };
+    collection[index] = normalizeCollectionItem(collectionKey, body, itemId);
     await writePublicOnly(store);
     sendJson(res, 200, { item: collection[index] });
     return true;
@@ -596,15 +560,10 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
 }
 
 async function serveStatic(res, pathname) {
-  let decoded;
-  try { decoded = decodeURIComponent(pathname); } catch { sendText(res, 400, 'Invalid path'); return; }
-  const publicScripts = new Set(['script.js','admin-script.js','checkout.js','whatsapp-demo.js','studio.js','marketing.js']);
-  const ext = path.extname(decoded).toLowerCase();
-  if (decoded.includes('\\') || decoded.split('/').some(p => p.startsWith('.')) || decoded.startsWith('/data/') || decoded.startsWith('/n8n/') || decoded.startsWith('/tests/') || (ext && !['.html','.css','.png','.jpg','.jpeg','.webp','.svg','.ico','.js'].includes(ext)) || (ext === '.js' && !publicScripts.has(decoded.slice(1)))) { sendText(res, 404, 'Not found'); return; }
-  let requestedPath = decoded === "/" ? "/index.html" : decoded;
+  let requestedPath = pathname === "/" ? "/index.html" : pathname;
   let filePath = path.normalize(path.join(rootDir, requestedPath));
 
-  if (filePath !== rootDir && !filePath.startsWith(rootDir + path.sep)) {
+  if (!filePath.startsWith(rootDir)) {
     sendText(res, 403, "Forbidden");
     return;
   }
@@ -633,19 +592,12 @@ async function serveStatic(res, pathname) {
   }
 
   try {
-    let content = await fs.readFile(filePath);
-    if (path.extname(filePath) === ".html") {
-      const result = seoTools.apply(content.toString("utf8"), await readPublicContent(), pathname);
-      if (result.missing) { sendText(res, 404, "Page not found"); return; }
-      content = result.html;
-      if(result.noindex) res.setHeader("X-Robots-Tag", "noindex, follow");
-    }
+    const content = await fs.readFile(filePath);
     res.writeHead(200, {
       "Content-Type": mimeTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream"
     });
     res.end(content);
-  } catch (error) {
-    if(error.statusCode) throw error;
+  } catch {
     sendText(res, 404, "Not found");
   }
 }
@@ -677,11 +629,10 @@ async function updatePassword(req, res, config) {
   const nextConfig = {
     ...config,
     adminPasswordHash: hash,
-    adminPasswordSalt: salt,
-    sessionSecret: crypto.randomBytes(32).toString("hex")
+    adminPasswordSalt: salt
   };
 
-  await documents.write("config",nextConfig);
+  await fs.writeFile(configPath, JSON.stringify(nextConfig, null, 2));
   configCache = nextConfig;
   sendJson(res, 200, { success: true });
 }
@@ -690,15 +641,8 @@ async function requestHandler(req, res) {
   const config = await loadConfig();
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname;
-  if(['GET','HEAD'].includes(req.method)&&!pathname.startsWith('/api/')) {
-    let canonical=seoTools.normalized(pathname);
-    const redirects={'/services/shopify-seo-blog-automation':'/services/blog-automation','/shopify-seo-blog-automation':'/services/blog-automation','/blog/index':'/blog','/whatsapp-order-bot':'/services/whatsapp-order-bot','/lead-generation':'/services/lead-generation','/rag-chatbot':'/services/rag-chatbot','/client-onboarding-automation':'/services/client-onboarding-automation','/social-media-automation':'/services/social-media-automation','/social-media-manager':'/services/social-media-manager','/ai-automation':'/services/custom-n8n-automation','/custom-ai-agents':'/services/custom-n8n-automation','/ai-video':'/content'};
-    canonical=redirects[canonical]||canonical;
-    if(canonical!==pathname){res.writeHead(301,{Location:canonical+url.search});res.end();return;}
-  }
 
   addSecurityHeaders(res);
-  if (await studio.handle(req, res, pathname, config)) return;
 
   const clientIp = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress;
 
@@ -722,14 +666,13 @@ async function requestHandler(req, res) {
       return;
     }
 
-    if (!config.sessionSecret) { sendJson(res, 503, {error:"Admin session secret is not configured"}); return; }
     const sessionValue = createSessionValue(config.adminUsername, config.sessionSecret);
     sendJson(
       res,
       200,
       { success: true },
       {
-        "Set-Cookie": `flowagent_session=${encodeURIComponent(sessionValue)}; HttpOnly; Path=/; Max-Age=28800; SameSite=Lax${req.headers.host && !req.headers.host.includes("localhost") ? "; Secure" : ""}`
+        "Set-Cookie": `flowagent_session=${encodeURIComponent(sessionValue)}; HttpOnly; Path=/; SameSite=Lax${req.headers.host && !req.headers.host.includes("localhost") ? "; Secure" : ""}`
       }
     );
     return;
@@ -752,7 +695,7 @@ async function requestHandler(req, res) {
       return;
     }
     const store = await readStore();
-    sendJson(res, 200, {...store, storage:documents.status()});
+    sendJson(res, 200, store);
     return;
   }
 
@@ -798,10 +741,8 @@ async function requestHandler(req, res) {
       return;
     }
     const body = await parseJsonBody(req);
-    if(!String(body.name||'').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.email||'')) || !String(body.message||'').trim()) {sendJson(res,400,{error:'Please provide your name, a valid email and a message.'});return;}
-    if(['name','company','email','phone','website','country','volume','message'].some(k=>String(body[k]||'').length>(k==='message'?5000:300))){sendJson(res,400,{error:'One or more fields is too long.'});return;}
     const store = await readStore();
-    const submission = {
+    store.leads.unshift({
       id: crypto.randomUUID(),
       type: "contact",
       status: "new",
@@ -813,28 +754,10 @@ async function requestHandler(req, res) {
       service: String(body.service || "").trim(),
       budget: String(body.budget || "").trim(),
       preferredContact: String(body.preferredContact || "").trim(),
-      website: String(body.website||'').trim(),
-      country: String(body.country||'').trim(),
-      volume: String(body.volume||'').trim(),
-      message: [String(body.message||'').trim(),body.website?'Website / Instagram: '+body.website:'',body.country?'Country: '+body.country:'',body.volume?'Monthly enquiries: '+body.volume:''].filter(Boolean).join('\n')
-    };
-    store.leads.unshift(submission);
-    await writePrivateOnly(store);
-    const emailSent = await sendFormNotification(config, "New Contact Form: " + (submission.name || "Website Visitor"), {
-      name: submission.name || "Website Visitor",
-      email: submission.email || "no-email@provided.com",
-      phone: submission.phone,
-      company: submission.company,
-      service: submission.service,
-      budget: submission.budget,
-      preferredContact: submission.preferredContact,
-      message: submission.message || "No message provided"
+      message: String(body.message || "").trim()
     });
-    if((req.headers['content-type']||'').startsWith('application/x-www-form-urlencoded')) {
-      res.writeHead(201,{'Content-Type':'text/html; charset=utf-8','X-Robots-Tag':'noindex'});
-      res.end('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Request received | FlowAgent</title><h1>Your request is saved.</h1><p>We will follow up using the contact details you provided. A call is not booked yet.</p><a href="/">Return to FlowAgent</a></html>');return;
-    }
-    sendJson(res, 201, { success: true, emailSent });
+    await writePrivateOnly(store);
+    sendJson(res, 201, { success: true });
     return;
   }
 
@@ -845,7 +768,7 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    const submission = {
+    store.bookings.unshift({
       id: crypto.randomUUID(),
       status: "new",
       submittedAt: new Date().toISOString(),
@@ -857,20 +780,9 @@ async function requestHandler(req, res) {
       preferredDate: String(body.preferredDate || "").trim(),
       preferredTime: String(body.preferredTime || "").trim(),
       message: String(body.message || "").trim()
-    };
-    store.bookings.unshift(submission);
-    await writePrivateOnly(store);
-    const emailSent = await sendFormNotification(config, "New Booking Request: " + (submission.name || "Website Visitor"), {
-      name: submission.name || "Website Visitor",
-      email: submission.email || "no-email@provided.com",
-      phone: submission.phone,
-      company: submission.company || "Not specified",
-      service: submission.service,
-      preferredDate: submission.preferredDate,
-      preferredTime: submission.preferredTime,
-      message: submission.message || "Booking request from " + (submission.name || "unknown") + " at " + (submission.company || "unknown company")
     });
-    sendJson(res, 201, { success: true, emailSent });
+    await writePrivateOnly(store);
+    sendJson(res, 201, { success: true });
     return;
   }
 
@@ -881,7 +793,7 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    const submission = {
+    store.leads.unshift({
       id: crypto.randomUUID(),
       type: "quote",
       status: "new",
@@ -894,20 +806,9 @@ async function requestHandler(req, res) {
       budget: String(body.budget || "").trim(),
       preferredContact: String(body.preferredContact || "").trim(),
       message: String(body.message || "").trim()
-    };
-    store.leads.unshift(submission);
-    await writePrivateOnly(store);
-    const emailSent = await sendFormNotification(config, "New Quote Request: " + (submission.name || "Website Visitor"), {
-      name: submission.name || "Website Visitor",
-      email: submission.email || "no-email@provided.com",
-      phone: submission.phone,
-      company: submission.company,
-      service: submission.service,
-      budget: submission.budget,
-      preferredContact: submission.preferredContact,
-      message: submission.message || "No message provided"
     });
-    sendJson(res, 201, { success: true, emailSent });
+    await writePrivateOnly(store);
+    sendJson(res, 201, { success: true });
     return;
   }
 
@@ -918,18 +819,13 @@ async function requestHandler(req, res) {
     }
     const body = await parseJsonBody(req);
     const store = await readStore();
-    const submission = {
+    store.newsletterSubscribers.unshift({
       id: crypto.randomUUID(),
       email: String(body.email || "").trim(),
       submittedAt: new Date().toISOString()
-    };
-    store.newsletterSubscribers.unshift(submission);
-    await writePrivateOnly(store);
-    const emailSent = await sendFormNotification(config, "New Newsletter Signup", {
-      email: submission.email || "no-email@provided.com",
-      message: "Newsletter signup from " + (submission.email || "unknown email")
     });
-    sendJson(res, 201, { success: true, emailSent });
+    await writePrivateOnly(store);
+    sendJson(res, 201, { success: true });
     return;
   }
 
@@ -1010,7 +906,6 @@ async function requestHandler(req, res) {
       return;
     }
 
-    if (service.quoteOnly || service.pilotOnly) { sendJson(res, 409, {error: 'This package requires a confirmed quote before checkout.'}); return; }
     const priceMatch = service.price.match(/\d+(\.\d+)?/);
     const numericPrice = priceMatch ? parseFloat(priceMatch[0]) : 0;
 
@@ -1040,7 +935,7 @@ async function requestHandler(req, res) {
       }
       
       try {
-        const tokenRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v1/oauth2/token`, {
+        const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
           method: "POST",
           headers: {
             "Accept": "application/json",
@@ -1053,7 +948,7 @@ async function requestHandler(req, res) {
         const tokenData = await tokenRes.json();
         const accessToken = tokenData.access_token;
 
-        const orderRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v2/checkout/orders`, {
+        const orderRes = await fetch("https://api-m.sandbox.paypal.com/v2/checkout/orders", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -1104,7 +999,7 @@ async function requestHandler(req, res) {
     }
 
     try {
-      const tokenRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v1/oauth2/token`, {
+      const tokenRes = await fetch("https://api-m.sandbox.paypal.com/v1/oauth2/token", {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -1115,7 +1010,7 @@ async function requestHandler(req, res) {
       });
       const tokenData = await tokenRes.json();
       
-      const captureRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v2/checkout/orders/${encodeURIComponent(body.paypalOrderId)}/capture`, {
+      const captureRes = await fetch(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${body.paypalOrderId}/capture`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1226,7 +1121,7 @@ async function requestHandler(req, res) {
   }
 
   if (req.method === "GET" && pathname === "/robots.txt") {
-    const robots = `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${seoTools.base(await readPublicContent())}/sitemap.xml\n`;
+    const robots = `User-agent: *\nAllow: /\nSitemap: ${config.baseUrl}/sitemap.xml\n`;
     sendText(res, 200, robots);
     return;
   }
@@ -1239,19 +1134,16 @@ async function requestHandler(req, res) {
       "/about",
       "/pricing",
       "/case-studies",
-      "/content",
-      "/demo",
-      "/privacy",
-      "/terms",
+      "/testimonials",
       "/blog",
       "/contact",
       "/faq"
     ];
-    const servicePages = store.services.filter(s => !s.legacy).map((service) => require("./marketing.cjs").link(service));
+    const servicePages = store.services.map((service) => `/services/${service.slug}`);
     const blogPages = store.blogPosts.map((post) => `/blog/${post.slug}`);
     const urls = staticPages.concat(servicePages, blogPages);
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-      .map((item) => `  <url><loc>${escapeXml(seoTools.base(store) + item)}</loc></url>`)
+      .map((item) => `  <url><loc>${escapeXml(config.baseUrl + item)}</loc></url>`)
       .join("\n")}\n</urlset>`;
     res.writeHead(200, { "Content-Type": "application/xml; charset=utf-8" });
     res.end(xml);
@@ -1261,22 +1153,18 @@ async function requestHandler(req, res) {
   await serveStatic(res, pathname);
 }
 
-let websiteWrites = Promise.resolve();
 const server = http.createServer((req, res) => {
-  const mutatesWebsite = ["POST","PUT","PATCH","DELETE"].includes(req.method) && req.url.startsWith("/api/") && !req.url.startsWith("/api/studio/");
-  const pending = mutatesWebsite ? websiteWrites.then(() => requestHandler(req,res)) : requestHandler(req,res);
-  if(mutatesWebsite) websiteWrites = pending.catch(() => {});
-  pending.catch((error) => {
+  requestHandler(req, res).catch((error) => {
     console.error(error);
     const code = error.statusCode || 500;
     sendJson(res, code, { error: code === 500 ? "Server error" : error.message });
   });
 });
 
-documents.initialize().then(() => loadConfig())
+loadConfig()
   .then((config) => {
     const port = process.env.PORT || config.port || 3000;
-    server.listen(port, process.env.HOST || "127.0.0.1", () => {
+    server.listen(port, () => {
       console.log(`FlowAgent server running on port ${port}`);
     });
   })
@@ -1293,4 +1181,3 @@ function shutdown() {
 }
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
-
