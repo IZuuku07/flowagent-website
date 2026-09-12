@@ -1,5 +1,8 @@
 // Update only unchanged legacy defaults. Keep owner edits and removed services.
 const changes=[
+{"keys":["services",{"id":"svc-custom-004"},"audience"],"before":"Ecommerce businesses with repetitive operational tasks","after":"Businesses with repetitive processes across multiple tools"},
+{"keys":["services",{"id":"svc-custom-004"},"useCases"],"before":["CRM automation","Inventory sync","Order processing","Reporting"],"after":["CRM updates","Lead routing","Business reporting","Document processing","Team notifications","Order workflows"]},
+{"keys":["faqs",{"id":"faq-scope"},"answer"],"before":"The plan covers the workflow and volume agreed for your system. For example, the Shopify blog service lists 30 articles per month. Discuss your expected message volume, connections, and deliverables before starting.","after":"Every plan covers an agreed workflow, integrations and usage range. We confirm expected message volume, actions and support before launch."},
  {keys:["seo","pages","/services/whatsapp-chat-bot","title"],before:"WhatsApp AI Chatbot | FlowAgent",after:"WhatsApp AI Agent for Business | FlowAgent"},
  {keys:["pageContent","home","heroTitle"],before:"Answer WhatsApp enquiries. Keep your team focused.",after:"Stop answering the same WhatsApp questions all day."},
   {
