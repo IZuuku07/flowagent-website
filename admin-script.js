@@ -919,7 +919,7 @@ function renderServiceAdmin(services) {
       <input type="hidden" name="id">
       <div class="form-grid">
         <label>Slug<input name="slug"></label>
-        <label>Title<input name="title"></label>
+        <label>Title<input name="title"></label><p>Search & sharing page overrides take priority over these service defaults.</p><label>Search title<input name="seoTitle" maxlength="120"></label><label>Search description<textarea name="seoDescription" maxlength="320"></textarea></label>
         <label>Price<input name="price"></label><label>Category<select name="category"><option>Content & Publishing</option><option>Sales & Bookings</option><option>Customer Support</option><option>Business Operations</option></select></label><label><input type="checkbox" name="quoteOnly"> Confirm scope and price before payment</label>
         <label>Audience<input name="audience"></label>
         <label>Stripe Link<input name="stripeLink"></label>
@@ -1295,6 +1295,8 @@ function bindAdminActions() {
     id: fd.get("id"),
     slug: fd.get("slug"),
     title: fd.get("title"),
+    seoTitle: fd.get("seoTitle"),
+    seoDescription: fd.get("seoDescription"),
     price: fd.get("price"),
     category: fd.get("category"),
     quoteOnly: fd.get("quoteOnly") === "on",
@@ -1474,7 +1476,7 @@ function bindAdminButtons() {
     if (!(target instanceof HTMLElement)) return;
 
     if (target.id === "clearServiceForm") {
-      fillForm("serviceForm", { id: "", slug: "", title: "", price: "", audience: "", stripeLink: "", paypalLink: "", imageUrl: "", imageAlt: "", description: "", benefits: "", deliverables: "", useCases: "", outcomes: "", faqJson: "", featured: false });
+      fillForm("serviceForm", { id: "", slug: "", title: "", seoTitle: "", seoDescription: "", price: "", audience: "", stripeLink: "", paypalLink: "", imageUrl: "", imageAlt: "", description: "", benefits: "", deliverables: "", useCases: "", outcomes: "", faqJson: "", featured: false });
       const imgInput = document.getElementById("serviceImageUrlInput");
       if(imgInput) imgInput.dispatchEvent(new Event("input"));
     }

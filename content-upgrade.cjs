@@ -1,5 +1,7 @@
 // Update only unchanged legacy defaults. Keep owner edits and removed services.
 const changes=[
+ {keys:["seo","pages","/services/whatsapp-chat-bot","title"],before:"WhatsApp AI Chatbot | FlowAgent",after:"WhatsApp AI Agent for Business | FlowAgent"},
+ {keys:["pageContent","home","heroTitle"],before:"Answer WhatsApp enquiries. Keep your team focused.",after:"Stop answering the same WhatsApp questions all day."},
   {
     "keys": [
       "pageContent",
@@ -7,7 +9,7 @@ const changes=[
       "heroTitle"
     ],
     "before": "AI automation for the work behind your business.",
-    "after": "Answer WhatsApp enquiries. Keep your team focused."
+    "after": "Stop answering the same WhatsApp questions all day."
   },
   {
     "keys": [
