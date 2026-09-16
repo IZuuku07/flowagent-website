@@ -417,6 +417,417 @@ const changes=[
   }
 ];
 
+changes.push(...[
+  {
+    "keys": [
+      "pageContent",
+      "home",
+      "heroTitle"
+    ],
+    "before": "Stop answering the same WhatsApp questions all day.",
+    "after": "Less busywork. More business."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "home",
+      "heroText"
+    ],
+    "before": "An AI assistant that answers common questions, collects enquiry details and hands conversations to your team. Built around your business information and the tools you already use.",
+    "after": "Your AI automation agency. We build agents that keep your social media active, publish your blog and turn WhatsApp conversations into confirmed orders. Reduce manual work, control costs and give your team time back."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "home",
+      "finalCtaTitle"
+    ],
+    "before": "What happens when a customer messages you?",
+    "after": "Build your next unfair advantage."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "home",
+      "finalCtaText"
+    ],
+    "before": "Tell us about your current process. We will review where a WhatsApp assistant could help and suggest a practical first workflow.",
+    "after": "Tell us what takes up your day. We will help you choose one useful automation, define its scope and get it working for your business."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "about",
+      "intro"
+    ],
+    "before": "FlowAgent builds WhatsApp assistants and business workflows around the questions, information and tools your team uses every day.",
+    "after": "FlowAgent is an AI automation agency for businesses that want less repetitive work and more time to grow. We connect content, publishing and customer conversations to the tools you already use."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "contact",
+      "headline"
+    ],
+    "before": "Your free WhatsApp automation audit.",
+    "after": "Let’s put your busywork on autopilot."
+  },
+  {
+    "keys": [
+      "pageContent",
+      "contact",
+      "intro"
+    ],
+    "before": "Tell us how you handle enquiries today. We will review your request and arrange a 20-minute conversation about your first workflow.",
+    "after": "Tell us about your business and the work you want to automate. Start with one agent, a clear scope and a free conversation."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "title"
+    ],
+    "before": "Social Media Manager",
+    "after": "Social Media Manager"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "category"
+    ],
+    "before": "Content & Publishing",
+    "after": "Content & Publishing"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "description"
+    ],
+    "before": "A custom social media workflow for content creation, publishing and inbox replies. Request an availability review to confirm the channels, tools and scope for your business.",
+    "after": "Keep your channels active with daily AI-generated videos and images, captions and scheduled posts. Answer comments using your brand information, with handoff when a person is needed."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "audience"
+    ],
+    "before": "Business owners who want help managing their social presence",
+    "after": "Businesses that want a consistent social presence without doing every post and reply by hand."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "deliverables"
+    ],
+    "before": [
+      "Agreed content plan",
+      "Monthly videos and images",
+      "Review and approval process"
+    ],
+    "after": [
+      "A content plan built around your business and brand voice",
+      "AI-generated videos and images with captions and relevant hashtags",
+      "Daily publishing on the connected channels agreed in your plan",
+      "Comment replies grounded in your approved business information",
+      "Approval controls and handoff for sensitive or uncertain replies"
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "workflowSteps"
+    ],
+    "before": [
+      "Agree on your business goals",
+      "Create and review content",
+      "Schedule approved content on supported channels"
+    ],
+    "after": [
+      "Choose topics and brand guidelines.",
+      "Generate the visual, video and caption.",
+      "Review content if your workflow requires approval.",
+      "Publish on the agreed daily schedule.",
+      "Reply to comments and route exceptions to your team."
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-social-manager"
+      },
+      "faq"
+    ],
+    "before": [],
+    "after": [
+      {
+        "question": "Is every platform supported?",
+        "answer": "We confirm your platforms, account permissions and publishing capabilities before setup. Comment automation depends on each platform’s API and account access."
+      },
+      {
+        "question": "How much content is included?",
+        "answer": "We agree the monthly number of videos and images, video length, channels and generation costs before you pay."
+      }
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "title"
+    ],
+    "before": "Blog Writing & Publishing",
+    "after": "Blogging Agent"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "category"
+    ],
+    "before": "Content & Publishing",
+    "after": "Content & Publishing"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "description"
+    ],
+    "before": "Move from a topic queue to a reviewed, published blog post. Connect your product or business information, article generation, images, and publishing schedule.",
+    "after": "Turn useful topics into structured articles, with titles, metadata and internal links. Review the draft, then publish to your connected website on schedule."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "audience"
+    ],
+    "before": "Businesses and agencies publishing to Shopify or a supported CMS",
+    "after": "Businesses that want a useful, consistent blog with less time spent drafting and uploading."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "deliverables"
+    ],
+    "before": [
+      "30 published blog articles per month",
+      "Content tracking spreadsheet"
+    ],
+    "after": [
+      "Topic planning around your products and customer questions",
+      "Draft articles in your brand voice",
+      "SEO titles, descriptions and suggested internal links",
+      "A review step for facts, accuracy and brand fit",
+      "Scheduled publishing to your supported CMS"
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "workflowSteps"
+    ],
+    "before": [
+      "Read the next approved topic",
+      "Generate the draft using business information",
+      "Collect approval and prepare the article",
+      "Publish and update the topic queue"
+    ],
+    "after": [
+      "Add approved topics and source information.",
+      "Draft a structured article and its metadata.",
+      "Review facts, links and the final copy.",
+      "Publish to your connected CMS on schedule."
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-seo-001"
+      },
+      "faq"
+    ],
+    "before": [
+      {
+        "question": "Are the articles written specifically for my products?",
+        "answer": "Yes. Every article is based on your product catalogue, target keywords, and audience."
+      },
+      {
+        "question": "Can I approve articles before publishing?",
+        "answer": "Yes. You can enable a review step in the workflow before automatic publishing."
+      }
+    ],
+    "after": [
+      {
+        "question": "Will it guarantee Google rankings?",
+        "answer": "No. The agent helps you publish useful, structured content consistently. Rankings depend on content quality, competition, site authority and many other factors."
+      }
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "title"
+    ],
+    "before": "WhatsApp AI Chatbot",
+    "after": "WhatsApp Sales & Confirmation"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "category"
+    ],
+    "before": "Customer Support",
+    "after": "Sales & Bookings"
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "description"
+    ],
+    "before": "Answer common questions using your business information, capture enquiry details, and route conversations to your team when a person is needed.",
+    "after": "Answer product questions, collect customer details and confirm orders on WhatsApp. Keep your order sheet or CRM updated and bring in your team when needed."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "audience"
+    ],
+    "before": "Businesses handling sales or support conversations on WhatsApp",
+    "after": "Shops and service businesses handling repeated sales questions and order confirmations on WhatsApp."
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "deliverables"
+    ],
+    "before": [
+      "Configured WhatsApp AI assistant",
+      "Knowledge base based on your products and policies",
+      "Lead capture and handoff flow",
+      "Testing and launch support"
+    ],
+    "after": [
+      "Answers based on your products, prices and approved policies",
+      "Collection of customer details and order preferences",
+      "An order summary and explicit customer confirmation step",
+      "Order updates in your connected sheet or CRM",
+      "Human handoff for exceptions and uncertain answers"
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "workflowSteps"
+    ],
+    "before": [
+      "Receive an incoming WhatsApp message",
+      "Retrieve approved business information",
+      "Draft a response or identify a handoff",
+      "Send the reply and log the conversation"
+    ],
+    "after": [
+      "A customer sends a WhatsApp message.",
+      "The agent answers using approved business information.",
+      "Collect the details needed for the order.",
+      "Ask the customer to confirm the order summary.",
+      "Save the confirmed details and notify your team."
+    ]
+  },
+  {
+    "keys": [
+      "services",
+      {
+        "id": "svc-wa-003"
+      },
+      "faq"
+    ],
+    "before": [
+      {
+        "question": "Can the AI hand off to a human?",
+        "answer": "Yes. The agent detects when a customer needs human help and routes the conversation to your team."
+      }
+    ],
+    "after": [
+      {
+        "question": "Can it confirm orders automatically?",
+        "answer": "It can send an order summary and record the customer’s confirmation. Payment verification, stock checks and fulfilment require the relevant integrations and agreed rules."
+      }
+    ]
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/",
+      "title"
+    ],
+    "before": "WhatsApp AI Chatbots & Business Automation | FlowAgent",
+    "after": "FlowAgent | AI Automation Agency for Content & Sales"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/",
+      "description"
+    ],
+    "before": "Answer WhatsApp enquiries, capture lead details and connect your business tools with FlowAgent. Start with a free automation audit.",
+    "after": "Reduce repetitive work with FlowAgent: social media management, AI blogging and WhatsApp sales and order confirmation agents built around your business."
+  }
+]);
+
 module.exports=function upgrade(data){
  const result=structuredClone(data);
  for(const change of changes){
