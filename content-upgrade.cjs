@@ -828,6 +828,168 @@ changes.push(...[
   }
 ]);
 
+changes.push(...[
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services",
+      "title"
+    ],
+    "before": "Business Automation Services | FlowAgent",
+    "after": "AI Automation Services for Content & Sales | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services",
+      "description"
+    ],
+    "before": "Explore WhatsApp AI assistants, lead follow-up and custom n8n workflows built around your business.",
+    "after": "Explore AI social media management, blog writing and publishing, and WhatsApp sales and order confirmation. Compare workflows and request a free audit."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/contact",
+      "title"
+    ],
+    "before": "Free WhatsApp Automation Audit | FlowAgent",
+    "after": "Free AI Automation Consultation | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/contact",
+      "description"
+    ],
+    "before": "Request a free 20-minute discussion of your WhatsApp enquiries, business tools and first automation workflow.",
+    "after": "Discuss social media, blogging or WhatsApp automation. Tell us about your business, tools and workload to plan a practical first workflow."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/pricing",
+      "title"
+    ],
+    "before": "WhatsApp Automation Pricing & Project Scope | FlowAgent",
+    "after": "AI Automation Pricing & Project Scope | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/pricing",
+      "description"
+    ],
+    "before": "Compare the free audit, scoped automation plans and ongoing support. Confirm deliverables and monthly volume before you commit.",
+    "after": "Compare automation plans and agree content volume, integrations, setup and support before starting your social media, blogging or WhatsApp workflow."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/about",
+      "title"
+    ],
+    "before": "About FlowAgent | Practical Business Automation",
+    "after": "About FlowAgent | AI Automation Agency"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/about",
+      "description"
+    ],
+    "before": "Learn how FlowAgent scopes, builds and tests WhatsApp assistants and business workflows.",
+    "after": "FlowAgent builds social media, blogging and WhatsApp sales automations around your business information, approval steps and existing tools."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/faq",
+      "title"
+    ],
+    "before": "WhatsApp & Business Automation FAQ | FlowAgent",
+    "after": "AI Automation Questions: Setup, Usage & Support | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/faq",
+      "description"
+    ],
+    "before": "Answers about setup, approved business information, human handoff, monthly scope and support.",
+    "after": "Answers about AI automation setup, account access, content approvals, human handoff, monthly scope and ongoing support."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/social-media-manager",
+      "title"
+    ],
+    "before": "Social Media Manager | FlowAgent",
+    "after": "AI Social Media Management & Auto Posting | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/social-media-manager",
+      "description"
+    ],
+    "before": "A custom social media workflow for content creation, publishing and inbox replies. Request an availability review to confirm the channels, tools and scope for your business.",
+    "after": "Automate daily videos and images, captions, scheduled publishing and comment replies. Build a social media workflow with brand guidelines and approvals."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/blog-automation",
+      "title"
+    ],
+    "before": "Blog Writing & Publishing Automation | FlowAgent",
+    "after": "AI Blog Writing & Publishing Automation | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/blog-automation",
+      "description"
+    ],
+    "before": "Move from a topic queue to a reviewed, published blog post. Connect your product or business information, article generation, images, and publishing schedule.",
+    "after": "Turn approved topics into blog drafts, SEO titles and internal links. Review facts and publish articles to your connected website on schedule."
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/whatsapp-chat-bot",
+      "title"
+    ],
+    "before": "WhatsApp AI Agent for Business | FlowAgent",
+    "after": "WhatsApp Sales Chatbot & Order Confirmation | FlowAgent"
+  },
+  {
+    "keys": [
+      "seo",
+      "pages",
+      "/services/whatsapp-chat-bot",
+      "description"
+    ],
+    "before": "Answer common questions using your business information, capture enquiry details, and route conversations to your team when a person is needed.",
+    "after": "Answer product questions, collect order details and confirm orders on WhatsApp. Connect your sheet or CRM and hand complex conversations to your team."
+  }
+]);
 module.exports=function upgrade(data){
  const result=structuredClone(data);
  for(const change of changes){
