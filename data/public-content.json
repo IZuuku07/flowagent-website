@@ -19,22 +19,25 @@
   },
   "pageContent": {
     "home": {
-      "heroTitle": "AI automation for the work behind your business.",
-      "heroText": "Connect your content, customer support and everyday tools. FlowAgent builds WhatsApp agents, publishing workflows and custom automation around the way you work.",
-      "primaryCtaLabel": "Discuss your project",
+      "heroTitle": "Less busywork. More business.",
+      "heroText": "Your AI automation agency. We build agents that keep your social media active, publish your blog and turn WhatsApp conversations into confirmed orders. Reduce manual work, control costs and give your team time back.",
+      "primaryCtaLabel": "Request a free audit",
       "primaryCtaLink": "/contact",
-      "secondaryCtaLabel": "Explore services",
-      "secondaryCtaLink": "/services",
+      "secondaryCtaLabel": "See the example",
+      "secondaryCtaLink": "/demo",
       "benefitsTitle": "Give repetitive work a repeatable process.",
       "benefitsIntro": "Start with one task your team repeats every day.",
-      "finalCtaTitle": "What would you take off your to-do list?",
-      "finalCtaText": "Tell us about one repetitive task, the tools involved, and your monthly volume. We can discuss the right workflow and its scope.",
-      "finalCtaLabel": "Discuss my workflow",
-      "finalCtaLink": "/contact"
+      "finalCtaTitle": "Build your next unfair advantage.",
+      "finalCtaText": "Tell us what takes up your day. We will help you choose one useful automation, define its scope and get it working for your business.",
+      "finalCtaLabel": "Request my free audit",
+      "finalCtaLink": "/contact",
+      "heroImageUrl": "/media/brand/hero.webp",
+      "heroImageAlt": "Content, customer conversations and orders connected in one organized workspace",
+      "heroNote": "Start with one workflow. Agree scope, usage and costs before launch."
     },
     "about": {
-      "headline": "Practical automation for the work behind your business.",
-      "intro": "FlowAgent connects content publishing, customer conversations, sales, and business operations using n8n and the tools you already use.",
+      "headline": "Practical automation. A clear first step.",
+      "intro": "FlowAgent is an AI automation agency for businesses that want less repetitive work and more time to grow. We connect content, publishing and customer conversations to the tools you already use.",
       "mission": "We connect the tools involved in a repeated task: your store, customer messages, content queue, and internal tracking. The starting point is a specific job with a clear input and an outcome you can check.",
       "whyAi": "AI can help draft content and interpret customer questions. Rules, approved source material, and human review are still needed where an incorrect answer or action could affect your business.",
       "methodology": [
@@ -54,8 +57,8 @@
       "intro": "One system. $59/month. Setup and AI/WhatsApp usage fees included for the agreed workflow."
     },
     "contact": {
-      "headline": "Let’s work through your first workflow.",
-      "intro": "Tell us what you do manually today. Include your tools, the steps involved, and approximate monthly volume."
+      "headline": "Let’s put your busywork on autopilot.",
+      "intro": "Tell us about your business and the work you want to automate. Start with one agent, a clear scope and a free conversation."
     },
     "faq": {
       "headline": "Frequently asked questions",
@@ -63,50 +66,50 @@
     },
     "blog": {
       "headline": "Blog",
-      "intro": "Insights on ecommerce automation, AI, and growth."
+      "intro": "Practical guides to customer conversations and business automation."
     }
   },
   "seo": {
-    "defaultTitle": "FlowAgent | AI Automation, Chatbots & Content Services",
-    "defaultDescription": "Automate content, customer support and everyday business tasks with FlowAgent. Explore WhatsApp agents, blog publishing, AI video and custom n8n workflows.",
+    "defaultTitle": "WhatsApp AI Chatbots & Business Automation | FlowAgent",
+    "defaultDescription": "Answer WhatsApp enquiries, capture lead details and connect your business tools with FlowAgent. Start with a free automation audit.",
     "siteUrl": "https://flowagent.best",
     "twitterHandle": "@flowagent",
     "pages": {
       "/": {
-        "title": "FlowAgent | AI Automation, Chatbots & Content Services",
-        "description": "Automate content, customer support and everyday business tasks with FlowAgent. Explore WhatsApp agents, blog publishing, AI video and custom n8n workflows."
+        "title": "FlowAgent | AI Automation Agency for Content & Sales",
+        "description": "Reduce repetitive work with FlowAgent: social media management, AI blogging and WhatsApp sales and order confirmation agents built around your business."
       },
       "/services": {
-        "title": "n8n Automation Services | FlowAgent",
-        "description": "Automate social publishing, blog content, WhatsApp support, lead follow-up, bookings, and business operations with FlowAgent."
+        "title": "AI Automation Services for Content & Sales | FlowAgent",
+        "description": "Explore AI social media management, blog writing and publishing, and WhatsApp sales and order confirmation. Compare workflows and request a free audit."
       },
       "/pricing": {
-        "title": "Pricing | FlowAgent",
-        "description": "Simple pricing for automated SEO, UGC video, and custom AI systems."
+        "title": "AI Automation Pricing & Project Scope | FlowAgent",
+        "description": "Compare automation plans and agree content volume, integrations, setup and support before starting your social media, blogging or WhatsApp workflow."
       },
       "/contact": {
-        "title": "Contact | FlowAgent",
-        "description": "Tell us what you want to automate for your ecommerce brand."
+        "title": "Free AI Automation Consultation | FlowAgent",
+        "description": "Discuss social media, blogging or WhatsApp automation. Tell us about your business, tools and workload to plan a practical first workflow."
       },
       "/faq": {
-        "title": "FAQ | FlowAgent",
-        "description": "Common questions about FlowAgent automation services."
+        "title": "AI Automation Questions: Setup, Usage & Support | FlowAgent",
+        "description": "Answers about AI automation setup, account access, content approvals, human handoff, monthly scope and ongoing support."
       },
       "/blog": {
-        "title": "Blog | FlowAgent",
-        "description": "Insights on ecommerce automation, AI, and growth."
+        "title": "Business Automation Guides | FlowAgent",
+        "description": "Practical articles about customer support, content workflows and business automation."
       },
       "/about": {
-        "title": "About | FlowAgent",
-        "description": "FlowAgent is a productized AI automation studio for Shopify and ecommerce brands."
+        "title": "About FlowAgent | AI Automation Agency",
+        "description": "FlowAgent builds social media, blogging and WhatsApp sales automations around your business information, approval steps and existing tools."
       },
       "/whatsapp-demo": {
         "title": "WhatsApp Chat Example | FlowAgent",
         "description": "Explore a scripted customer support simulation with sample data. Try order tracking, product questions, and human handoff."
       },
       "/services/whatsapp-chat-bot": {
-        "title": "WhatsApp AI Chatbot | FlowAgent",
-        "description": "Answer common questions using your business information, capture enquiry details, and route conversations to your team when a person is needed."
+        "title": "WhatsApp Sales Chatbot & Order Confirmation | FlowAgent",
+        "description": "Answer product questions, collect order details and confirm orders on WhatsApp. Connect your sheet or CRM and hand complex conversations to your team."
       },
       "/services/whatsapp-order-bot": {
         "title": "WhatsApp Order Confirmation Automation | FlowAgent",
@@ -181,8 +184,36 @@
         "description": "Compare 30 ten-second Gemini Omni videos or 30 twenty-second Seedance videos, with 30 image posts and an approval workspace."
       },
       "/services/social-media-manager": {
-        "title": "Social Media Manager | FlowAgent",
-        "description": "A planned managed service for videos, branded images, scheduled posts, and replies to messages and comments. We confirm supported channels and availability befo"
+        "title": "AI Social Media Management & Auto Posting | FlowAgent",
+        "description": "Automate daily videos and images, captions, scheduled publishing and comment replies. Build a social media workflow with brand guidelines and approvals."
+      },
+      "/content": {
+        "title": "Content & Blog Publishing Automation | FlowAgent",
+        "description": "Connect ideas, content review and publishing with tailored blog, video and social media workflows."
+      },
+      "/demo": {
+        "title": "WhatsApp AI Chatbot Example | FlowAgent",
+        "description": "Explore a scripted WhatsApp assistant demo with FAQ replies, enquiry capture and human handoff. Sample data only."
+      },
+      "/case-studies": {
+        "title": "Automation Workflow Examples | FlowAgent",
+        "description": "Explore illustrative business workflows and sample conversations. These are examples, not verified client outcomes."
+      },
+      "/testimonials": {
+        "title": "Customer Feedback | FlowAgent",
+        "description": "Customer feedback and ways to explore FlowAgent services."
+      },
+      "/privacy": {
+        "title": "Privacy Policy | FlowAgent",
+        "description": "How FlowAgent handles website enquiries and personal information."
+      },
+      "/terms": {
+        "title": "Terms of Service | FlowAgent",
+        "description": "Terms covering FlowAgent services, agreed scope and payments."
+      },
+      "/services/blog-automation": {
+        "title": "AI Blog Writing & Publishing Automation | FlowAgent",
+        "description": "Turn approved topics into blog drafts, SEO titles and internal links. Review facts and publish articles to your connected website on schedule."
       }
     }
   },
@@ -192,17 +223,19 @@
       "slug": "social-media-manager",
       "title": "Social Media Manager",
       "price": "Pilot pricing on request",
-      "description": "A planned managed service for videos, branded images, scheduled posts, and replies to messages and comments. We confirm supported channels and availability before you start.",
-      "audience": "Business owners who want help managing their social presence",
+      "description": "Keep your channels active with daily AI-generated videos and images, captions and scheduled posts. Answer comments using your brand information, with handoff when a person is needed.",
+      "audience": "Businesses that want a consistent social presence without doing every post and reply by hand.",
       "benefits": [
         "30 videos and 30 branded images per month",
         "Content review before publishing",
         "Publishing and reply automation planned for supported channels"
       ],
       "deliverables": [
-        "Agreed content plan",
-        "Monthly videos and images",
-        "Review and approval process"
+        "A content plan built around your business and brand voice",
+        "AI-generated videos and images with captions and relevant hashtags",
+        "Daily publishing on the connected channels agreed in your plan",
+        "Comment replies grounded in your approved business information",
+        "Approval controls and handoff for sensitive or uncertain replies"
       ],
       "useCases": [
         "Social media management"
@@ -210,7 +243,16 @@
       "outcomes": [
         "A consistent content routine"
       ],
-      "faq": [],
+      "faq": [
+        {
+          "question": "Is every platform supported?",
+          "answer": "We confirm your platforms, account permissions and publishing capabilities before setup. Comment automation depends on each platform’s API and account access."
+        },
+        {
+          "question": "How much content is included?",
+          "answer": "We agree the monthly number of videos and images, video length, channels and generation costs before you pay."
+        }
+      ],
       "stripeLink": "",
       "paypalLink": "",
       "featured": true,
@@ -218,18 +260,20 @@
       "category": "Content & Publishing",
       "quoteOnly": true,
       "workflowSteps": [
-        "Agree on your business goals",
-        "Create and review content",
-        "Schedule approved content on supported channels"
+        "Choose topics and brand guidelines.",
+        "Generate the visual, video and caption.",
+        "Review content if your workflow requires approval.",
+        "Publish on the agreed daily schedule.",
+        "Reply to comments and route exceptions to your team."
       ]
     },
     {
       "id": "svc-wa-003",
       "slug": "whatsapp-chat-bot",
-      "title": "WhatsApp AI Chatbot",
+      "title": "WhatsApp Sales & Confirmation",
       "price": "$59/month",
-      "description": "Answer common questions using your business information, capture enquiry details, and route conversations to your team when a person is needed.",
-      "audience": "Businesses handling sales or support conversations on WhatsApp",
+      "description": "Answer product questions, collect customer details and confirm orders on WhatsApp. Keep your order sheet or CRM updated and bring in your team when needed.",
+      "audience": "Shops and service businesses handling repeated sales questions and order confirmations on WhatsApp.",
       "benefits": [
         "Instant replies for customers and leads",
         "Product recommendations from your offers",
@@ -239,10 +283,11 @@
         "Conversation tracking for follow-up"
       ],
       "deliverables": [
-        "Configured WhatsApp AI assistant",
-        "Knowledge base based on your products and policies",
-        "Lead capture and handoff flow",
-        "Testing and launch support"
+        "Answers based on your products, prices and approved policies",
+        "Collection of customer details and order preferences",
+        "An order summary and explicit customer confirmation step",
+        "Order updates in your connected sheet or CRM",
+        "Human handoff for exceptions and uncertain answers"
       ],
       "useCases": [
         "Customer support",
@@ -254,8 +299,8 @@
       ],
       "faq": [
         {
-          "question": "Can the AI hand off to a human?",
-          "answer": "Yes. The agent detects when a customer needs human help and routes the conversation to your team."
+          "question": "Can it confirm orders automatically?",
+          "answer": "It can send an order summary and record the customer’s confirmation. Payment verification, stock checks and fulfilment require the relevant integrations and agreed rules."
         }
       ],
       "stripeLink": "",
@@ -264,12 +309,13 @@
       "imageUrl": "/media/whatsapp-automation-card.png",
       "imageAlt": "WhatsApp automation dashboard for ecommerce sales and support",
       "legacy": false,
-      "category": "Customer Support",
+      "category": "Sales & Bookings",
       "workflowSteps": [
-        "Receive an incoming WhatsApp message",
-        "Retrieve approved business information",
-        "Draft a response or identify a handoff",
-        "Send the reply and log the conversation"
+        "A customer sends a WhatsApp message.",
+        "The agent answers using approved business information.",
+        "Collect the details needed for the order.",
+        "Ask the customer to confirm the order summary.",
+        "Save the confirmed details and notify your team."
       ]
     },
     {
@@ -330,10 +376,10 @@
     {
       "id": "svc-seo-001",
       "slug": "shopify-seo-blog-automation",
-      "title": "Blog Writing & Publishing",
+      "title": "Blogging Agent",
       "price": "$59/month",
-      "description": "Move from a topic queue to a reviewed, published blog post. Connect your product or business information, article generation, images, and publishing schedule.",
-      "audience": "Businesses and agencies publishing to Shopify or a supported CMS",
+      "description": "Turn useful topics into structured articles, with titles, metadata and internal links. Review the draft, then publish to your connected website on schedule.",
+      "audience": "Businesses that want a useful, consistent blog with less time spent drafting and uploading.",
       "benefits": [
         "30 SEO articles per month",
         "Product-focused keyword topics",
@@ -343,8 +389,11 @@
         "Google Sheets tracking"
       ],
       "deliverables": [
-        "30 published blog articles per month",
-        "Content tracking spreadsheet"
+        "Topic planning around your products and customer questions",
+        "Draft articles in your brand voice",
+        "SEO titles, descriptions and suggested internal links",
+        "A review step for facts, accuracy and brand fit",
+        "Scheduled publishing to your supported CMS"
       ],
       "useCases": [
         "Product-focused SEO content",
@@ -356,12 +405,8 @@
       ],
       "faq": [
         {
-          "question": "Are the articles written specifically for my products?",
-          "answer": "Yes. Every article is based on your product catalogue, target keywords, and audience."
-        },
-        {
-          "question": "Can I approve articles before publishing?",
-          "answer": "Yes. You can enable a review step in the workflow before automatic publishing."
+          "question": "Will it guarantee Google rankings?",
+          "answer": "No. The agent helps you publish useful, structured content consistently. Rankings depend on content quality, competition, site authority and many other factors."
         }
       ],
       "stripeLink": "",
@@ -372,10 +417,10 @@
       "legacy": false,
       "category": "Content & Publishing",
       "workflowSteps": [
-        "Read the next approved topic",
-        "Generate the draft using business information",
-        "Collect approval and prepare the article",
-        "Publish and update the topic queue"
+        "Add approved topics and source information.",
+        "Draft a structured article and its metadata.",
+        "Review facts, links and the final copy.",
+        "Publish to your connected CMS on schedule."
       ]
     },
     {
@@ -486,7 +531,7 @@
       "title": "Custom n8n Automation",
       "price": "$59/month",
       "description": "Custom n8n workflows connecting your applications, data, team, and AI tools.",
-      "audience": "Ecommerce businesses with repetitive operational tasks",
+      "audience": "Businesses with repetitive processes across multiple tools",
       "benefits": [
         "API integrations",
         "CRM workflows",
@@ -501,10 +546,12 @@
         "Testing and deployment"
       ],
       "useCases": [
-        "CRM automation",
-        "Inventory sync",
-        "Order processing",
-        "Reporting"
+        "CRM updates",
+        "Lead routing",
+        "Business reporting",
+        "Document processing",
+        "Team notifications",
+        "Order workflows"
       ],
       "outcomes": [
         "Automated operations tailored to your business"
@@ -1207,7 +1254,7 @@
       "id": "faq-002",
       "category": "General",
       "question": "Do I need to provide Shopify access?",
-      "answer": "Yes. For SEO blog automation and product-based content, we need read access to your Shopify product catalogue and blog publishing permissions."
+      "answer": "Only for workflows involving Shopify. Other services use the relevant WhatsApp, spreadsheet, CRM or publishing permissions agreed during setup."
     },
     {
       "id": "faq-003",
@@ -1261,7 +1308,19 @@
       "id": "faq-scope",
       "category": "Pricing",
       "question": "Is the plan unlimited?",
-      "answer": "The plan covers the workflow and volume agreed for your system. For example, the Shopify blog service lists 30 articles per month. Discuss your expected message volume, connections, and deliverables before starting."
+      "answer": "Every plan covers an agreed workflow, integrations and usage range. We confirm expected message volume, actions and support before launch."
+    },
+    {
+      "id": "faq-human",
+      "category": "WhatsApp",
+      "question": "When does a person take over?",
+      "answer": "We agree on handoff rules before launch, including unanswered questions, sensitive requests and customers asking for your team. The workflow can flag these for human review."
+    },
+    {
+      "id": "faq-security",
+      "category": "WhatsApp",
+      "question": "What information does the assistant use?",
+      "answer": "The products, policies and FAQs you approve. We agree access permissions and the information to record before setup. AI answers and exception handling are tested before launch."
     }
   ],
   "blogPosts": [
