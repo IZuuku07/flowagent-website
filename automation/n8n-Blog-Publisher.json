@@ -1,0 +1,303 @@
+{
+  "name": "FlowAgent.best — Approved Blog Publisher • API + SEO",
+  "nodes": [
+    {
+      "id": "dcfad4b7-915f-4f58-abb4-144e0f7b7327",
+      "name": "Publish Approved Library Now",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "50161045-2fde-45db-b3b4-e7ac0a97128f",
+      "name": "Daily Publishing",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "81c2ebcb-39e0-48c7-8f59-f205e7d1a581",
+      "name": "Manual Limit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{runLimit:100}}];"
+      }
+    },
+    {
+      "id": "24a3db0f-cbdf-4af0-9d6f-dee7d2664022",
+      "name": "Daily Limit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        220
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{runLimit:3}}];"
+      }
+    },
+    {
+      "id": "00499343-dfb9-4058-9803-d35eb56a9537",
+      "name": "Publication Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        80
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{runLimit:Math.min(100,Math.max(1,Number($json.runLimit)||3)),baseUrl:'https://flowagent.best'}}];"
+      }
+    },
+    {
+      "id": "ed5818f3-2fed-44ee-9964-678e9a7ead3c",
+      "name": "Get Approved Library",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        670,
+        80
+      ],
+      "parameters": {
+        "url": "={{ $('Publication Context').first().json.baseUrl + '/api/publishing/library' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FlowAgent Publishing API"
+        }
+      }
+    },
+    {
+      "id": "bb1a7298-52ad-4203-9368-8ecad438a6cd",
+      "name": "Get Published Slugs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        80
+      ],
+      "parameters": {
+        "url": "={{ $('Publication Context').first().json.baseUrl + '/api/publishing/posts' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FlowAgent Publishing API"
+        }
+      }
+    },
+    {
+      "id": "77ad093a-4bc6-48f1-89f7-0b8c44cc8dab",
+      "name": "Choose Unpublished Approved Posts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1130,
+        80
+      ],
+      "parameters": {
+        "jsCode": "const library=$('Get Approved Library').first().json.posts; const published=$json.posts; if(!Array.isArray(library)||!Array.isArray(published))throw Error('Unexpected publishing API response'); const seen=new Set(published.map(p=>p.slug)); const selected=library.filter(p=>p.approved===true&&!seen.has(p.slug)).slice(0,$('Publication Context').first().json.runLimit);const unique=new Set();const rows=selected.map(p=>{if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug)||unique.has(p.slug))throw Error('Invalid or duplicate article slug');unique.add(p.slug);return {json:p};});\nreturn rows.length?[{json:{posts:rows.map(r=>r.json)}}]:[];"
+      }
+    },
+    {
+      "id": "fb8ba550-5d89-4818-b233-222c7c2b39cc",
+      "name": "Publish Approved Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Publication Context').first().json.baseUrl + '/api/publishing/batch' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FlowAgent Publishing API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2500
+    },
+    {
+      "id": "f5302119-373a-4574-bdb5-c99dbedacabc",
+      "name": "Verify Publication Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        160
+      ],
+      "parameters": {
+        "jsCode": "const r=$json;const selected=$('Choose Unpublished Approved Posts').first().json.posts;if(!Array.isArray(r.posts)||r.posts.length!==selected.length||r.posts.some(p=>!p.id||!p.slug||!['created','updated','unchanged'].includes(p.action)))throw Error('Publication receipt is incomplete. Inspect the API before retrying.');return [{json:r}];"
+      }
+    },
+    {
+      "id": "9ecc4675-d9f3-45f7-9ceb-4137f80fdae8",
+      "name": "Publishing Guide",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -530
+      ],
+      "parameters": {
+        "content": "## FlowAgent • Approved SEO publishing\n1. Deploy website API code to GitHub/main and wait for Render.\n2. Set FLOWAGENT_PUBLISH_TOKEN privately in Render Environment (32+ characters).\n3. Create n8n Header Auth credential named FlowAgent Publishing API: header Authorization, value Bearer <same token>.\n4. Select that credential on all three HTTP nodes.\n5. Manual trigger publishes up to100 missing approved articles. Daily trigger publishes up to3.\n\nOnly approved posts are accepted. Slugs make API writes idempotent. Existing published slugs are skipped, preserving owner edits. No admin login. No secret in this export. Larmen and WhatsApp workflows are separate.\n\nThe batch API validates all selected articles and internal links before one write. Run the manual trigger first to publish the linked100-article library together; activate the daily schedule afterwards.",
+        "height": 430,
+        "width": 620
+      }
+    }
+  ],
+  "connections": {
+    "Publish Approved Library Now": {
+      "main": [
+        [
+          {
+            "node": "Manual Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Publishing": {
+      "main": [
+        [
+          {
+            "node": "Daily Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Limit": {
+      "main": [
+        [
+          {
+            "node": "Publication Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Limit": {
+      "main": [
+        [
+          {
+            "node": "Publication Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publication Context": {
+      "main": [
+        [
+          {
+            "node": "Get Approved Library",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Approved Library": {
+      "main": [
+        [
+          {
+            "node": "Get Published Slugs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Published Slugs": {
+      "main": [
+        [
+          {
+            "node": "Choose Unpublished Approved Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Choose Unpublished Approved Posts": {
+      "main": [
+        [
+          {
+            "node": "Publish Approved Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Approved Batch": {
+      "main": [
+        [
+          {
+            "node": "Verify Publication Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Casablanca",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "executionTimeout": 900
+  },
+  "active": false,
+  "pinData": {},
+  "tags": []
+}
