@@ -1,0 +1,215 @@
+{
+  "name": "FlowAgent.best — Website Control API",
+  "nodes": [
+    {
+      "id": "e8f892d3-7627-4cd7-b3ab-1f06e7d4ac5a",
+      "name": "Run Website Update",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5bd8a5ea-d169-474c-b4c0-d23c6b04dca0",
+      "name": "Website Configuration",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{baseUrl:'https://flowagent.best',resource:'pages/home',dryRun:true,patch:{heroTitle:'Un assistant WhatsApp pour votre commerce.'}}}];"
+      }
+    },
+    {
+      "id": "a86579b8-b0e5-44d0-aed2-c7e4962b95eb",
+      "name": "Read Website Resource",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        0
+      ],
+      "parameters": {
+        "url": "={{ $('Website Configuration').first().json.baseUrl + '/api/v1/' + $('Website Configuration').first().json.resource }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FlowAgent Website Control API"
+        }
+      }
+    },
+    {
+      "id": "b285982b-0192-4100-8613-ac42f9fa5d51",
+      "name": "Apply Update Enabled",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "77768357-c2e6-4d12-b707-3c848429c4f8",
+              "leftValue": "={{ $('Website Configuration').first().json.dryRun }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0f6e5ecb-b033-4e76-91b1-f8e44abb3e8f",
+      "name": "Update Website Resource",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        -100
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Website Configuration').first().json.baseUrl + '/api/v1/' + $('Website Configuration').first().json.resource }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "If-Match",
+              "value": "={{ $('Read Website Resource').first().json.revision }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Website Configuration').first().json.patch) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "FlowAgent Website Control API"
+        }
+      }
+    },
+    {
+      "id": "d3f6cbfb-a7d7-4675-9e5a-4e3e4e2a776d",
+      "name": "Verify Saved Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "if($json.action!=='updated'||!$json.revision)throw Error('The update was not verified. Inspect the response before retrying.');return [{json:$json}];"
+      }
+    },
+    {
+      "id": "b34ba316-cd37-42e6-bd87-54e1e680c3e4",
+      "name": "Control API Guide",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -500
+      ],
+      "parameters": {
+        "content": "## FlowAgent • Website control\nSet FLOWAGENT_WEBSITE_API_TOKEN privately in Render. Create Header Auth credential: Authorization = Bearer <same token>. Select it on both HTTP nodes.\n\nEdit resource and patch in Website Configuration. Run with dryRun=true to inspect the current content; no write occurs. Set dryRun=false to apply your reviewed patch.\n\nPATCH preserves omitted fields. 412 means another edit happened: inspect the latest content before retrying. No automatic retries. This template does not delete records. No admin login or secrets in this export.",
+        "height": 360,
+        "width": 680
+      }
+    }
+  ],
+  "connections": {
+    "Run Website Update": {
+      "main": [
+        [
+          {
+            "node": "Website Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Configuration": {
+      "main": [
+        [
+          {
+            "node": "Read Website Resource",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Website Resource": {
+      "main": [
+        [
+          {
+            "node": "Apply Update Enabled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Update Enabled": {
+      "main": [
+        [
+          {
+            "node": "Update Website Resource",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Website Resource": {
+      "main": [
+        [
+          {
+            "node": "Verify Saved Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "executionTimeout": 180
+  },
+  "active": false,
+  "pinData": {}
+}
