@@ -8,6 +8,7 @@ const seoTools = require("./seo.cjs");
 const storage = require("./storage.cjs");
 const storagePaths = storage.paths(rootDir);
 const documents = require("./document-store.cjs").createDocumentStore({root:rootDir});
+const publicCache = require('./public-cache.cjs').createPublicCache({read:()=>documents.read('public'),upgrade:require('./content-upgrade.cjs')});
 const studio = require('./studio-backend.cjs').createStudio({directory: rootDir, documentStore: documents, verifySession, parseJsonBody, sendJson});
 const publicContentPath = storagePaths.publicContent;
 const privateRuntimePath = storagePaths.privateRuntime;
@@ -19,6 +20,7 @@ const mimeTypes = {
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
+  ".webp": "image/webp",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".svg": "image/svg+xml",
@@ -109,9 +111,7 @@ function createDefaultPrivateRuntime() {
 }
 
 async function readPublicContent() {
-  const data = await documents.read("public");
-  if (!data) throw Object.assign(new Error("Website content is not initialized"), {statusCode:503});
-  return require("./content-upgrade.cjs")(data);
+  return publicCache.get();
 }
 
 async function readPrivateRuntime() {
@@ -169,7 +169,12 @@ async function writePublicContent(store) {
     blogPosts: store.blogPosts,
     media: store.media
   };
-  await documents.write("public",data);
+  await savePublicDocument(data);
+}
+
+async function savePublicDocument(data) {
+  try {await documents.write('public',data);publicCache.committed(data);}
+  catch(error){publicCache.invalidate();throw error;}
 }
 
 async function writePrivateRuntime(store) {
@@ -356,7 +361,7 @@ function ensureAdmin(req, res, config) {
 }
 
 function sanitizePublicData(store, config) {
-  // Return only public settings — strip private fields
+  // Return only public settings â€” strip private fields
   const publicSettings = {};
   for (const key of PUBLIC_SETTINGS_KEYS) {
     publicSettings[key] = store.settings[key] !== undefined ? store.settings[key] : "";
@@ -597,7 +602,7 @@ async function handleCollection(req, res, config, store, collectionKey, itemId) 
   return false;
 }
 
-async function serveStatic(res, pathname) {
+async function serveStatic(res, pathname, query = {}) {
   let decoded;
   try { decoded = decodeURIComponent(pathname); } catch { sendText(res, 400, 'Invalid path'); return; }
   const publicScripts = new Set(['script.js','admin-script.js','checkout.js','whatsapp-demo.js','studio.js','marketing.js']);
@@ -637,7 +642,7 @@ async function serveStatic(res, pathname) {
   try {
     let content = await fs.readFile(filePath);
     if (path.extname(filePath) === ".html") {
-      const result = seoTools.apply(content.toString("utf8"), await readPublicContent(), pathname);
+      const result = seoTools.apply(content.toString("utf8"), await readPublicContent(), pathname, query);
       if (result.missing) { sendText(res, 404, "Page not found"); return; }
       content = result.html;
       if(content.includes('src="/marketing.js"'))res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
@@ -693,6 +698,37 @@ async function requestHandler(req, res) {
   const config = await loadConfig();
   const url = new URL(req.url, `http://${req.headers.host}`);
   const pathname = url.pathname;
+  if(await websiteApi(req,res,pathname))return;
+  if(['/api/publishing/posts','/api/publishing/library','/api/publishing/batch'].includes(pathname)) {
+    const publishing=require('./publishing.cjs');
+    const token=process.env.FLOWAGENT_PUBLISH_TOKEN;
+    if(!token||token.length<32){sendJson(res,503,{error:'Publishing API is not configured.'});return;}
+    if(!publishing.authorized(req.headers.authorization,token)){sendJson(res,401,{error:'Unauthorized'});return;}
+    if(pathname==='/api/publishing/batch'){
+      if(req.method!=='POST'){res.setHeader('Allow','POST');sendJson(res,405,{error:'Method not allowed'});return;}
+      const body=await parseJsonBody(req,2097152);const data=await readPublicContent();
+      const result=publishing.publishBatch(data,body);
+      if(result.created||result.updated)await savePublicDocument(data);
+      sendJson(res,200,result);return;
+    }
+    if(pathname==='/api/publishing/library'){
+      if(req.method!=='GET'){res.setHeader('Allow','GET');sendJson(res,405,{error:'Method not allowed'});return;}
+      let library;
+      try{library=JSON.parse(await fs.readFile(path.join(rootDir,'data','approved-blog-posts.json'),'utf8'));}
+      catch(error){if(error.code==='ENOENT'){sendJson(res,503,{error:'Approved article library is not ready.'});return;}throw error;}
+      sendJson(res,200,{posts:library.filter(p=>p.approved===true)});return;
+    }
+    if(req.method==='GET'){
+      const data=await readPublicContent();sendJson(res,200,{posts:data.blogPosts.map(p=>({id:p.id,slug:p.slug,title:p.title,publishedAt:p.publishedAt}))});return;
+    }
+    if(req.method==='POST'){
+      const body=await parseJsonBody(req,131072);const data=await readPublicContent();
+      const result=publishing.publish(data,body);
+      if(result.action!=='unchanged')await savePublicDocument(data);
+      sendJson(res,result.action==='created'?201:200,{action:result.action,id:result.post.id,slug:result.post.slug,url:seoTools.base(data)+'/blog/'+result.post.slug});return;
+    }
+    res.setHeader('Allow','GET, POST');sendJson(res,405,{error:'Method not allowed'});return;
+  }
   if(['GET','HEAD'].includes(req.method)&&!pathname.startsWith('/api/')) {
     let canonical=seoTools.normalized(pathname);
     const redirects={'/services/shopify-seo-blog-automation':'/services/blog-automation','/shopify-seo-blog-automation':'/services/blog-automation','/blog/index':'/blog','/whatsapp-order-bot':'/services/whatsapp-order-bot','/lead-generation':'/services/lead-generation','/rag-chatbot':'/services/rag-chatbot','/client-onboarding-automation':'/services/client-onboarding-automation','/social-media-automation':'/services/social-media-automation','/social-media-manager':'/services/social-media-manager','/ai-automation':'/services/custom-n8n-automation','/custom-ai-agents':'/services/custom-n8n-automation','/ai-video':'/content'};
@@ -806,9 +842,11 @@ async function requestHandler(req, res) {
       return;
     }
     const body = await parseJsonBody(req);
+    if(body.consent !== 'yes') {sendJson(res,400,{error:'Please agree to be contacted about this request.'});return;}
     if(!String(body.name||'').trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.email||'')) || !String(body.message||'').trim()) {sendJson(res,400,{error:'Please provide your name, a valid email and a message.'});return;}
-    if(['name','company','email','phone','website','country','volume','message'].some(k=>String(body[k]||'').length>(k==='message'?5000:300))){sendJson(res,400,{error:'One or more fields is too long.'});return;}
+    if(['name','company','email','phone','website','country','volume','service','plan','message'].some(k=>String(body[k]||'').length>(k==='message'?5000:300))){sendJson(res,400,{error:'One or more fields is too long.'});return;}
     const store = await readStore();
+    const intent = require('./marketing.cjs').enquiryIntent(store,{service:body.service,plan:body.plan});
     const submission = {
       id: crypto.randomUUID(),
       type: "contact",
@@ -818,7 +856,10 @@ async function requestHandler(req, res) {
       email: String(body.email || "").trim(),
       phone: String(body.phone || "").trim(),
       company: String(body.company || "").trim(),
-      service: String(body.service || "").trim(),
+      service: intent.label,
+      serviceSlug: intent.serviceSlug,
+      planId: intent.planId,
+      consent: {contact: true, recordedAt: new Date().toISOString()},
       budget: String(body.budget || "").trim(),
       preferredContact: String(body.preferredContact || "").trim(),
       website: String(body.website||'').trim(),
@@ -1010,7 +1051,7 @@ async function requestHandler(req, res) {
   if (req.method === "POST" && pathname === "/api/checkout/create-order") {
     const body = await parseJsonBody(req);
     const store = await readStore();
-    
+
     // Find service or pricing plan
     const service = store.services.find(s => s.id === body.serviceId) || store.pricingPlans.find(p => p.id === body.serviceId);
     if (!service) {
@@ -1046,7 +1087,7 @@ async function requestHandler(req, res) {
         sendJson(res, 500, { error: "PayPal credentials not configured on server" });
         return;
       }
-      
+
       try {
         const tokenRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v1/oauth2/token`, {
           method: "POST",
@@ -1079,9 +1120,9 @@ async function requestHandler(req, res) {
             }]
           })
         });
-        
+
         const orderData = await orderRes.json();
-        
+
         if (!orderRes.ok) {
           throw new Error(orderData.message || "Failed to create PayPal order");
         }
@@ -1104,7 +1145,7 @@ async function requestHandler(req, res) {
   if (req.method === "POST" && pathname === "/api/checkout/capture-paypal") {
     const body = await parseJsonBody(req);
     const store = await readStore();
-    
+
     const orderIndex = store.orders.findIndex(o => o.id === body.orderId && o.paypalOrderId === body.paypalOrderId);
     if (orderIndex < 0) {
       sendJson(res, 404, { error: "Order not found" });
@@ -1122,7 +1163,7 @@ async function requestHandler(req, res) {
         body: "grant_type=client_credentials"
       });
       const tokenData = await tokenRes.json();
-      
+
       const captureRes = await fetch(`${config.paypalEnvironment === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com"}/v2/checkout/orders/${encodeURIComponent(body.paypalOrderId)}/capture`, {
         method: "POST",
         headers: {
@@ -1130,14 +1171,14 @@ async function requestHandler(req, res) {
           "Authorization": `Bearer ${tokenData.access_token}`
         }
       });
-      
+
       const captureData = await captureRes.json();
-      
+
       if (captureData.status === "COMPLETED") {
         store.orders[orderIndex].paymentStatus = "paid";
         store.orders[orderIndex].status = "completed"; // Or 'in_progress' depending on workflow
         await writePrivateOnly(store);
-        
+
         // Trigger n8n Webhook
         if (config.n8nCheckoutWebhookUrl) {
           fetch(config.n8nCheckoutWebhookUrl, {
@@ -1161,7 +1202,7 @@ async function requestHandler(req, res) {
   if (req.method === "POST" && pathname === "/api/checkout/bank-transfer") {
     const body = await parseJsonBody(req);
     const store = await readStore();
-    
+
     const orderIndex = store.orders.findIndex(o => o.id === body.orderId);
     if (orderIndex < 0) {
       sendJson(res, 404, { error: "Order not found" });
@@ -1188,11 +1229,11 @@ async function requestHandler(req, res) {
   // --- ORDER MANAGEMENT API ---
   if (req.method === "PATCH" && pathname.startsWith("/api/orders/")) {
     if (!ensureAdmin(req, res, config)) return;
-    
+
     const orderId = pathname.split("/").pop();
     const body = await parseJsonBody(req);
     const store = await readStore();
-    
+
     const index = store.orders.findIndex(o => o.id === orderId);
     if (index < 0) {
       sendJson(res, 404, { error: "Order not found" });
@@ -1233,13 +1274,13 @@ async function requestHandler(req, res) {
     }
   }
 
-  if (req.method === "GET" && pathname === "/robots.txt") {
-    const robots = `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${seoTools.base(await readPublicContent())}/sitemap.xml\n`;
+  if (["GET","HEAD"].includes(req.method) && pathname === "/robots.txt") {
+    const robots = `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /studio\nSitemap: ${seoTools.base(await readPublicContent())}/sitemap.xml\n`;
     sendText(res, 200, robots);
     return;
   }
 
-  if (req.method === "GET" && pathname === "/sitemap.xml") {
+  if (["GET","HEAD"].includes(req.method) && pathname === "/sitemap.xml") {
     const store = await readStore();
     const staticPages = [
       "/",
@@ -1266,10 +1307,11 @@ async function requestHandler(req, res) {
     return;
   }
 
-  await serveStatic(res, pathname);
+  await serveStatic(res, pathname, Object.fromEntries(url.searchParams));
 }
 
 let websiteWrites = Promise.resolve();
+const websiteApi=require('./website-api.cjs').createWebsiteApi({read:readPublicContent,save:savePublicDocument,parse:parseJsonBody,send:sendJson,normalizeItem:normalizeCollectionItem});
 const server = http.createServer((req, res) => {
   const mutatesWebsite = ["POST","PUT","PATCH","DELETE"].includes(req.method) && req.url.startsWith("/api/") && !req.url.startsWith("/api/studio/");
   const pending = mutatesWebsite ? websiteWrites.then(() => requestHandler(req,res)) : requestHandler(req,res);

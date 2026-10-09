@@ -8,20 +8,21 @@ function pageInfo(data,path){
  const missing=(path.startsWith('/services/')&&!service)||(path.startsWith('/blog/')&&!post);
  const custom=data.seo.pages?.[path]||{};
  const title=(path==='/admin'?'Manage your website | FlowAgent':null)||custom.title||service?.seoTitle||(service?service.title+' | FlowAgent':post?post.title+' | FlowAgent':data.seo.defaultTitle);
- const description=custom.description||service?.seoDescription||service?.description||post?.excerpt||data.seo.defaultDescription;
+ const description=custom.description||service?.seoDescription||service?.description||post?.metaDescription||post?.excerpt||data.seo.defaultDescription;
  return {path,service,post,missing,title,description,url:base(data)+path,noindex:['/admin','/checkout','/studio','/payment-success','/payment-cancel','/service-detail'].includes(path)||missing||service?.legacy};
 }
-function apply(html,data,path){
+function apply(html,data,path,query={}){
  const info=pageInfo(data,path);const org={'@type':'Organization','@id':base(data)+'/#organization',name:data.settings.brandName||'FlowAgent',url:base(data),logo:base(data)+'/flowagent-logo.png'};
  const graph=[org,{'@type':'WebSite','@id':base(data)+'/#website',url:base(data),name:'FlowAgent',publisher:{'@id':org['@id']}}];
  graph.push({'@type':'WebPage','@id':info.url+'#webpage',url:info.url,name:info.title,description:info.description,isPartOf:{'@id':base(data)+'/#website'},about:{'@id':org['@id']}});
  if(info.service)graph.push({'@type':'Service',name:info.service.title,description:info.service.description,serviceType:info.service.title,url:info.url,areaServed:{'@type':'Country',name:'Morocco'},provider:{'@id':org['@id']}});
+ if(info.post){const p=info.post;graph.push({'@type':'BlogPosting','@id':info.url+'#article',headline:p.title,description:p.metaDescription||p.excerpt,url:info.url,mainEntityOfPage:{'@id':info.url+'#webpage'},datePublished:p.publishedAt,dateModified:p.updatedAt||p.publishedAt,inLanguage:p.language||'en',...(p.imageUrl?{image:base(data)+p.imageUrl}:{}),author:{'@type':'Organization',name:p.author||'FlowAgent Editorial',url:base(data)+'/about'},publisher:{'@id':org['@id']}});html=html.replace(/<html\b([^>]*?)lang=["'][^"']*["']/i,'<html$1lang="'+(['en','fr','ar'].includes(p.language)?p.language:'en')+'"');}
  if(info.service||info.post)graph.push({'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Home',item:base(data)},{'@type':'ListItem',position:2,name:info.service?'Services':'Blog',item:base(data)+(info.service?'/services':'/blog')},{'@type':'ListItem',position:3,name:info.service?.title||info.post.title,item:info.url}]});
  html=html.replace(/<title>[\s\S]*?<\/title>/gi,'').replace(/<meta\b[^>]*(?:name|property)=["'](?:description|robots|og:[^"']*|twitter:[^"']*)["'][^>]*>/gi,'').replace(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi,'');
  const head=`${info.path==='/'?'<meta name="google-site-verification" content="Frq03OJBUuVS04L6SWC3eWJ6hr_58lDbeGhkOb3wSg4">':''}<title>${esc(info.title)}</title><meta name="description" content="${esc(info.description)}"><link rel="canonical" href="${esc(info.url)}"><meta name="robots" content="${info.noindex?'noindex,follow':'index,follow'}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(info.title)}"><meta property="og:description" content="${esc(info.description)}"><meta property="og:url" content="${esc(info.url)}"><meta property="og:image" content="${base(data)}/flowagent-logo.png"><meta name="twitter:card" content="summary_large_image"><script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>`;
  if(!/rel=["'](?:shortcut )?icon["']/i.test(html))html=html.replace('</head>','<link rel="icon" href="/flowagent-logo.png" type="image/png"></head>');
  html=html.replace('</head>',head+'</head>');
- let body=marketing.render(data,info.path,info);
+ let body=marketing.render(data,info.path,{...info,query});
  if(body!==null&&(info.service||info.post))body='<nav class="container seo-breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="'+(info.service?'/services':'/blog')+'">'+(info.service?'Services':'Blog')+'</a> / <span>'+esc(info.service?.title||info.post.title)+'</span></nav>'+body;
  if(body!==null){
  html=html.replace(/<main\b[^>]*>[\s\S]*?<\/main>/i,()=>'<main id="main">'+body+'</main>');

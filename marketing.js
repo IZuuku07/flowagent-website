@@ -10,3 +10,11 @@ document.querySelectorAll('[data-demo]').forEach(button=>button.addEventListener
 const form=document.getElementById('auditForm');
 form?.addEventListener('focusin',()=>track('form_start'),{once:true});
 form?.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type=submit]'),status=document.getElementById('auditStatus');button.disabled=true;status.textContent='Sending your request…';try{const data=Object.fromEntries(new FormData(form));const response=await fetch('/api/forms/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(result.error||'Your request could not be saved. Please try again.');status.textContent='Your request is saved. We will follow up using the contact details you provided. A call is not booked yet.';track('form_submit');form.reset();}catch(error){status.textContent=error.message;}finally{button.disabled=false;}});
+
+const blogSearch=document.getElementById('blogSearch'),blogLanguage=document.getElementById('blogLanguage');
+if(blogSearch&&blogLanguage){
+ const normalize=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const cards=[...document.querySelectorAll('#blogGrid .blog-card')];
+ const filter=()=>{const query=normalize(blogSearch.value.trim());let count=0;for(const card of cards){const matches=normalize(card.textContent).includes(query)&&(blogLanguage.value==='all'||card.dataset.language===blogLanguage.value);card.hidden=!matches;if(matches)count++;}document.getElementById('blogCount').textContent=count+' articles';};
+ blogSearch.addEventListener('input',filter);blogLanguage.addEventListener('change',filter);filter();
+}

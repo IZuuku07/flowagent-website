@@ -990,6 +990,11 @@ changes.push(...[
     "after": "Answer product questions, collect order details and confirm orders on WhatsApp. Connect your sheet or CRM and hand complex conversations to your team."
   }
 ]);
+changes.push(
+ {keys:['pageContent','home','heroImageUrl'],before:undefined,after:'/media/brand/hero.webp'},
+ {keys:['pageContent','home','heroImageAlt'],before:undefined,after:'Content, customer conversations and orders connected in one organized workspace'},
+ {keys:['pageContent','home','heroNote'],before:undefined,after:'Start with one workflow. Agree scope, usage and costs before launch.'}
+);
 module.exports=function upgrade(data){
  const result=structuredClone(data);
  for(const change of changes){
