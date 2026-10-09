@@ -3,6 +3,17 @@
 This API publishes reviewed blog articles from n8n without website-admin login.
 It does not provide access to leads, payments, credentials or website settings.
 
+## Owner-authorized 9 October 2026 release
+
+The owner requested immediate publication of the reviewed 100-article library.
+For this specific release, `blog-release.cjs` applies a one-time migration during
+Render startup using the already configured Supabase document store. It verifies
+the exact reviewed library digest, adds only missing slugs and preserves existing
+owner-edited articles. A persistent release marker prevents later restarts from
+republishing deliberately removed articles. This does not publish future drafts
+or configure API credentials. The separate API and n8n workflow below remain the
+normal publishing path for later articles.
+
 1. Deploy this source to GitHub `main` and wait for Render to finish.
 2. Configure `FLOWAGENT_PUBLISH_TOKEN` in Render Environment with a random secret
    of at least 32 characters. The API stays disabled when this is not configured.

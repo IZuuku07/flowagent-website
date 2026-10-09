@@ -158,6 +158,7 @@ function splitSettings(settings) {
 async function writePublicContent(store) {
   const { pub } = splitSettings(store.settings);
   const data = {
+    ...await readPublicContent(),
     settings: pub,
     pageContent: store.pageContent,
     seo: store.seo,
@@ -743,7 +744,7 @@ async function requestHandler(req, res) {
 
   if (req.method === "GET" && pathname === "/api/health") {
     res.setHeader("Cache-Control", "no-store");
-    sendJson(res,200,{status:"ok",version:"2026-09-12-review-2",commit:process.env.RENDER_GIT_COMMIT||null});return;
+    sendJson(res,200,{status:"ok",version:"2026-10-09-content-api-blog-release",commit:process.env.RENDER_GIT_COMMIT||null});return;
   }
 
   if (req.method === "GET" && pathname === "/api/public-data") {
@@ -1323,7 +1324,13 @@ const server = http.createServer((req, res) => {
   });
 });
 
-documents.initialize().then(() => loadConfig())
+documents.initialize().then(async()=>{
+  if(documents.remote&&process.env.RENDER){
+    const receipt=await require('./blog-release.cjs').publishRelease(documents,require('./data/approved-blog-posts.json'));
+    publicCache.invalidate();
+    console.log('Approved blog release: '+JSON.stringify(receipt));
+  }
+}).then(() => loadConfig())
   .then((config) => {
     const port = process.env.PORT || config.port || 3000;
     server.listen(port, process.env.HOST || "127.0.0.1", () => {
